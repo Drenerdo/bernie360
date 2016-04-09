@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>three.js webgl - equirectangular video panorama</title>
+		<title>three.js webvr - video</title>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<style>
 			body {
-				background-color: #000000;
+				font-family: Monospace;
+				background-color: #f0f0f0;
 				margin: 0px;
 				overflow: hidden;
 			}
 			#info {
 				position: absolute;
-				top: 0px; width: 100%;
-				color: #ffffff;
-				padding: 5px;
-				font-family:Monospace;
-				font-size:13px;
-				font-weight: bold;
-				text-align:center;
+				top: 10px;
+				width: 100%;
+				color: #fff;
+				text-align: center;
 			}
 			a {
-				color: #ffffff;
+				color: #ff0
 			}
 		</style>
 	</head>
@@ -29,103 +27,197 @@
 
 		<div id="container"></div>
 
-		<script src="node_modules/three/three.min.js"></script>
+		<script src="node_modules/three/three.js"></script>
 
+        <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
+
+		<script src="node_modules/three/examples/js/WebVR.js"></script>
+		<script src="node_modules/three/examples/js/effects/VREffect.js"></script>
+		<script src="node_modules/three/examples/js/controls/VRControls.js"></script>
+<script>
+WebVRConfig = {
+  /**
+   * webvr-polyfill configuration
+   */
+
+  // Forces availability of VR mode.
+  FORCE_ENABLE_VR: true, // Default: false.
+  // Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
+  //K_FILTER: 0.98, // Default: 0.98.
+  // How far into the future to predict during fast motion.
+  //PREDICTION_TIME_S: 0.040, // Default: 0.040 (in seconds).
+  // Flag to disable touch panner. In case you have your own touch controls
+  //TOUCH_PANNER_DISABLED: true, // Default: false.
+  // Enable yaw panning only, disabling roll and pitch. This can be useful for
+  // panoramas with nothing interesting above or below.
+  //YAW_ONLY: true, // Default: false.
+  // Enable the deprecated version of the API (navigator.getVRDevices).
+  //ENABLE_DEPRECATED_API: true, // Default: false.
+  // Scales the recommended buffer size reported by WebVR, which can improve
+  // performance. Making this very small can lower the effective resolution of
+  // your scene.
+  //BUFFER_SCALE: 0.5, // default: 1.0
+  // Allow VRDisplay.submitFrame to change gl bindings, which is more
+  // efficient if the application code will re-bind it's resources on the
+  // next frame anyway.
+  // Dirty bindings include: gl.FRAMEBUFFER_BINDING, gl.CURRENT_PROGRAM,
+  // gl.ARRAY_BUFFER_BINDING, gl.ELEMENT_ARRAY_BUFFER_BINDING,
+  // and gl.TEXTURE_BINDING_2D for texture unit 0
+  // Warning: enabling this might lead to rendering issues.
+  //DIRTY_SUBMIT_FRAME_BINDINGS: true // default: false
+};
+</script>
 		<script>
+
+			if ( WEBVR.isLatestAvailable() === false ) {
+
+				document.body.appendChild( WEBVR.getMessage() );
+
+			}
+
+			//
+
 			var camera, scene, renderer;
-			var texture_placeholder,
-			isUserInteracting = false,
-			onMouseDownMouseX = 0, onMouseDownMouseY = 0,
-			lon = 0, onMouseDownLon = 0,
-			lat = 0, onMouseDownLat = 0,
-			phi = 0, theta = 0,
-			distance = 500;
+			var video, texture;
+
+			var controls, effect;
+
 			init();
 			animate();
+
 			function init() {
-				var container, mesh;
-				container = document.getElementById( 'container' );
-				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
-				camera.target = new THREE.Vector3( 0, 0, 0 );
-				scene = new THREE.Scene();
-				var geometry = new THREE.SphereBufferGeometry( 500, 60, 40 );
-				geometry.scale( - 1, 1, 1 );
-				var video = document.createElement( 'video' );
-				video.width = 640;
-				video.height = 360;
-				video.autoplay = true;
-				video.loop = true;
-				video.src = "Bernie in the Bronx_Mono 2.mp4";
-				var texture = new THREE.VideoTexture( video );
-				texture.minFilter = THREE.LinearFilter;
+
+				var container = document.getElementById( 'container' );
+				container.addEventListener( 'click', function () {
+
+					video.play();
+
+				} );
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.layers.enable( 1 ); // render left view when no stereo available
+
+				// video
+
+                video = document.createElement( 'video' );
+                //video.loop = true;
+                video.buffered = true;
+                //video.src = 'bernie_stereo.mp4';
+                video.src = 'bernie_stereo_1024.mp4';
+                //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/bernie_stereo_1024.mp4';
+				//video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
+				video.play();
+
+				texture = new THREE.VideoTexture( video );
+				texture.minFilter = THREE.NearestFilter;
+				texture.maxFilter = THREE.NearestFilter;
 				texture.format = THREE.RGBFormat;
-				var material   = new THREE.MeshBasicMaterial( { map : texture } );
-				mesh = new THREE.Mesh( geometry, material );
+				texture.generateMipmaps = false;
+
+				scene = new THREE.Scene();
+
+				// left
+
+				var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
+				geometry.scale( 1, 1, 1 );
+
+				var uvs = geometry.faceVertexUvs[ 0 ];
+
+				for ( var i = 0; i < uvs.length; i ++ ) {
+
+					for ( var j = 0; j < 3; j ++ ) {
+
+						uvs[ i ][ j ].y *= 0.5;
+
+					}
+
+				}
+
+				var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
+
+				var mesh = new THREE.Mesh( geometry, material );
+				mesh.rotation.y = - Math.PI / 2;
+				mesh.layers.set( 1 ); // display in left eye only
 				scene.add( mesh );
+
+				// right
+
+				var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
+				geometry.scale( 1, 1, 1 );
+
+				var uvs = geometry.faceVertexUvs[ 0 ];
+
+				for ( var i = 0; i < uvs.length; i ++ ) {
+
+					for ( var j = 0; j < 3; j ++ ) {
+
+						uvs[ i ][ j ].y *= 0.5;
+						uvs[ i ][ j ].y += 0.5;
+
+					}
+
+				}
+
+				var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
+
+				var mesh = new THREE.Mesh( geometry, material );
+				mesh.rotation.y = - Math.PI / 2;
+				mesh.layers.set( 2 ); // display in right eye only
+				scene.add( mesh );
+
+				//
+
 				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0x101010 );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
-				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				document.addEventListener( 'mouseup', onDocumentMouseUp, false );
-				document.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
-				document.addEventListener( 'MozMousePixelScroll', onDocumentMouseWheel, false);
+
 				//
+
+				controls = new THREE.VRControls( camera );
+
+				effect = new THREE.VREffect( renderer );
+				effect.scale = 0; // video doesn't need eye separation
+				effect.setSize( window.innerWidth, window.innerHeight );
+
+				if ( WEBVR.isAvailable() === true ) {
+
+					document.body.appendChild( WEBVR.getButton( effect ) );
+
+				}
+
+
+				//
+
 				window.addEventListener( 'resize', onWindowResize, false );
+
 			}
+
 			function onWindowResize() {
+
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				effect.setSize( window.innerWidth, window.innerHeight );
+
 			}
-			function onDocumentMouseDown( event ) {
-				event.preventDefault();
-				isUserInteracting = true;
-				onPointerDownPointerX = event.clientX;
-				onPointerDownPointerY = event.clientY;
-				onPointerDownLon = lon;
-				onPointerDownLat = lat;
-			}
-			function onDocumentMouseMove( event ) {
-				if ( isUserInteracting === true ) {
-					lon = ( onPointerDownPointerX - event.clientX ) * 0.1 + onPointerDownLon;
-					lat = ( event.clientY - onPointerDownPointerY ) * 0.1 + onPointerDownLat;
-				}
-			}
-			function onDocumentMouseUp( event ) {
-				isUserInteracting = false;
-			}
-			function onDocumentMouseWheel( event ) {
-				// WebKit
-				if ( event.wheelDeltaY ) {
-					distance -= event.wheelDeltaY * 0.05;
-				// Opera / Explorer 9
-				} else if ( event.wheelDelta ) {
-					distance -= event.wheelDelta * 0.05;
-				// Firefox
-				} else if ( event.detail ) {
-					distance += event.detail * 1.0;
-				}
-			}
+
 			function animate() {
+
 				requestAnimationFrame( animate );
-				update();
+				render();
+
 			}
-			function update() {
-				lat = Math.max( - 85, Math.min( 85, lat ) );
-				phi = THREE.Math.degToRad( 90 - lat );
-				theta = THREE.Math.degToRad( lon );
-				camera.position.x = distance * Math.sin( phi ) * Math.cos( theta );
-				camera.position.y = distance * Math.cos( phi );
-				camera.position.z = distance * Math.sin( phi ) * Math.sin( theta );
-				camera.lookAt( camera.target );
-				/*
-				// distortion
-				camera.position.copy( camera.target ).negate();
-				*/
-				renderer.render( scene, camera );
+
+			function render() {
+
+				controls.update();
+
+				effect.render( scene, camera );
+
 			}
+
 		</script>
 	</body>
 </html>

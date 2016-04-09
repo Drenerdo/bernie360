@@ -27,13 +27,13 @@
 
 		<div id="container"></div>
 
-		<script src="node_modules/three/build/three.js"></script>
+		<script src="node_modules/three/three.js"></script>
 
-        <script src="node_modules/webvr-polyfill/webvr-polyfill.js"></script>
+        <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
 
-		<script src="js/WebVR.js"></script>
-		<script src="js/effects/VREffect.js"></script>
-		<script src="js/controls/VRControls.js"></script>
+		<script src="node_modules/three/examples/js/WebVR.js"></script>
+		<script src="node_modules/three/examples/js/effects/VREffect.js"></script>
+		<script src="node_modules/three/examples/js/controls/VRControls.js"></script>
 
 		<script>
 
@@ -68,7 +68,7 @@
 				// video
 
                 video = document.createElement( 'video' );
-                video.loop = true;
+                //video.loop = true;
                 video.buffered = true;
                 //video.src = 'bernie_stereo.mp4';
                 video.src = 'bernie_stereo_1024.mp4';
@@ -85,7 +85,7 @@
 
 				// left
 
-				var geometry = new THREE.SphereGeometry( 500, 60, 40 );
+				var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
 				geometry.scale( 1, 1, 1 );
 
 				var uvs = geometry.faceVertexUvs[ 0 ];
@@ -109,7 +109,7 @@
 
 				// right
 
-				var geometry = new THREE.SphereGeometry( 500, 60, 40 );
+				var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
 				geometry.scale( 1, 1, 1 );
 
 				var uvs = geometry.faceVertexUvs[ 0 ];

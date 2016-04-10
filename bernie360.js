@@ -5,7 +5,6 @@ function init() {
     var controls, effect;
 
     if ( WEBVR.isLatestAvailable() === false ) {
-        // document.body.appendChild( WEBVR.getMessage() );
         console.warn( 'deprecated version of the WebVR API is being used' );
     }
 
@@ -22,26 +21,26 @@ function init() {
     // video
 
     video = document.createElement( 'video' );
-    //video.loop = true;
-    //video.buffered = true;
-    video.crossOrigin = "anonymous";
-    // video.src = 'bernie_stereo_1024.mp4';
-    // video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/bernie_stereo_1024.mp4';
-    // video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
+    // video.loop = true;
+    // video.buffered = true;
+    // video.crossOrigin = "anonymous";
+    // video.crossorigin = "anonymous";
     if (isMobile()) {
         // lower res for mobile
         video.src = 'bernie_stereo_1080_web_optimized.mp4';
     } else {
         // high res, video can autostart on desktop
+        // video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/bernie_stereo_1024.mp4';
+        // video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
         video.src = 'BernieStereoHighResBronx.mp4';
     }
 
     texture = new THREE.VideoTexture( video );
 
-    // texture.minFilter = THREE.NearestFilter;
-    // texture.maxFilter = THREE.NearestFilter;
-    texture.minFilter = THREE.LinearFilter;
-    texture.maxFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.maxFilter = THREE.NearestFilter;
+    // texture.minFilter = THREE.LinearFilter;
+    // texture.maxFilter = THREE.LinearFilter;
 
     texture.format = THREE.RGBFormat;
     texture.generateMipmaps = false;
@@ -69,7 +68,7 @@ function init() {
         var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
 
         var mesh = new THREE.Mesh( geometry, material );
-        //mesh.rotation.y = - Math.PI / 2;
+        // mesh.rotation.y = Math.PI / 2;
         mesh.layers.set( 1 ); // display in left eye only
         scene.add( mesh );
     } )();

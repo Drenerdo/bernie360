@@ -1,12 +1,8 @@
-
-//
-
-var camera, scene, renderer;
-var video, texture;
-
-var controls, effect;
-
 function init() {
+    var camera, scene, renderer;
+    var video, texture;
+
+    var controls, effect;
 
     if ( WEBVR.isLatestAvailable() === false ) {
         // document.body.appendChild( WEBVR.getMessage() );
@@ -15,13 +11,18 @@ function init() {
 
     var isPlaying = false;
 
-    var container = document.getElementById( 'container' );
-    container.addEventListener( 'click', function () {
+    function startVideo() {
         if (!isPlaying) {
             video.play();
             animate();
             isPlaying = true;
+            setTimeout(addGraphs, 5000);
         }
+    }
+
+    var container = document.getElementById( 'container' );
+    container.addEventListener( 'click', function () {
+        startVideo();
     } );
 
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
@@ -33,19 +34,11 @@ function init() {
     //video.loop = true;
     //video.buffered = true;
     video.crossOrigin = "anonymous";
-    //video.src = 'bernie_stereo_1024.mp4';
     //video.src = 'BernieStereoHighResBronx.mp4';
-    video.src = 'bernie_stereo_1080_web_optimized.mp4';
+    //video.src = 'bernie_stereo_1080_web_optimized.mp4';
+    video.src = 'bernie_stereo_1024.mp4';
     //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/bernie_stereo_1024.mp4';
     //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
-
-    video.oncanplay = function () {
-        if (!isPlaying) {
-            video.play();
-            animate();            
-            isPlaying = true;
-        }
-    };
 
     texture = new THREE.VideoTexture( video );
 
@@ -133,33 +126,66 @@ function init() {
 
     }
 
-
     //
 
     window.addEventListener( 'resize', onWindowResize, false );
 
-}
+    function onWindowResize() {
 
-function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
 
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+        effect.setSize( window.innerWidth, window.innerHeight );
 
-    effect.setSize( window.innerWidth, window.innerHeight );
+    }
 
-}
+    function animate() {
 
-function animate() {
+        requestAnimationFrame( animate );
+        render();
 
-    requestAnimationFrame( animate );
-    render();
+    }
 
-}
+    function render() {
 
-function render() {
+        controls.update();
+        effect.render( scene, camera );
 
-    controls.update();
+    }
 
-    effect.render( scene, camera );
+    function displayText(text) {
+
+    }
+
+    function addGraphs() {
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(50, 30, 20);
+        scene.add(directionalLight);
+
+        var colors = [0xff0000, 0xff2200, 0xff4400, 0xff6600, 0xff8800];
+        var boxMeshes = [];
+
+        var boxGeom = new THREE.BoxBufferGeometry(0.75, 1, 0.75);
+        for (var i = 0; i < colors.length; i++) {
+            var boxMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
+            var boxMesh = new THREE.Mesh(boxGeom, boxMaterial);
+            boxMesh.position.set(-2 + i, 0.75, -3);
+            scene.add(boxMesh);
+            boxMeshes.push(boxMesh);
+        }
+
+        var fadeInInterval;
+        fadeInInterval = setInterval( function () {
+            for (var i = 0; i < boxMeshes.length; i++) {
+                var boxMaterial = boxMeshes[i].material;
+                boxMaterial.opacity += 0.01 - 0.0001*i;
+                if (boxMaterial.opacity === 1) {
+                    clearInterval(fadeInInterval);
+                }
+            }
+        }, 30);
+
+    }
 
 }

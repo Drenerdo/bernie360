@@ -15,7 +15,7 @@ app.debug = True
 
 @app.route('/')
 def home():
-    return render_template("webvr_video.html")
+    return render_template("index.html")
 
 
 def main():

@@ -1,7 +1,3 @@
-if ( WEBVR.isLatestAvailable() === false ) {
-    // document.body.appendChild( WEBVR.getMessage() );
-    console.warn( 'deprecated version of the WebVR API is being used' );
-}
 
 //
 
@@ -10,16 +6,22 @@ var video, texture;
 
 var controls, effect;
 
-init();
-animate();
-
 function init() {
+
+    if ( WEBVR.isLatestAvailable() === false ) {
+        // document.body.appendChild( WEBVR.getMessage() );
+        console.warn( 'deprecated version of the WebVR API is being used' );
+    }
+
+    var isPlaying = false;
 
     var container = document.getElementById( 'container' );
     container.addEventListener( 'click', function () {
-
-        // video.play();
-
+        if (!isPlaying) {
+            video.play();
+            animate();
+            isPlaying = true;
+        }
     } );
 
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
@@ -30,12 +32,20 @@ function init() {
     video = document.createElement( 'video' );
     //video.loop = true;
     //video.buffered = true;
+    video.crossOrigin = "anonymous";
     //video.src = 'bernie_stereo_1024.mp4';
-    video.src = 'BernieStereoHighResBronx.mp4';
+    //video.src = 'BernieStereoHighResBronx.mp4';
+    video.src = 'bernie_stereo_1080_web_optimized.mp4';
     //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/bernie_stereo_1024.mp4';
     //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
-    video.play();
-    //video = document.getElementById('video');
+
+    video.oncanplay = function () {
+        if (!isPlaying) {
+            video.play();
+            animate();            
+            isPlaying = true;
+        }
+    };
 
     texture = new THREE.VideoTexture( video );
 
@@ -70,7 +80,7 @@ function init() {
         var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
 
         var mesh = new THREE.Mesh( geometry, material );
-        mesh.rotation.y = - Math.PI / 2;
+        //mesh.rotation.y = - Math.PI / 2;
         mesh.layers.set( 1 ); // display in left eye only
         scene.add( mesh );
     } )();
@@ -96,7 +106,7 @@ function init() {
         var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
 
         var mesh = new THREE.Mesh( geometry, material );
-        mesh.rotation.y = - Math.PI / 2;
+        //mesh.rotation.y = - Math.PI / 2;
         mesh.layers.set( 2 ); // display in right eye only
         scene.add( mesh );
     } )();

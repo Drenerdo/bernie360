@@ -1,7 +1,7 @@
 {
-  "name": "webvr-boilerplate",
-  "version": "0.4.1",
-  "description": "A starting point for web-based VR experiences that work in both Cardboard and Oculus.",
+  "name": "bernie360",
+  "version": "0.1.0",
+  "description": "Bernie Sanders: the VR experience",
   "dependencies": {
     "webvr-polyfill": "https://github.com/jzitelli/webvr-polyfill.git#webvr-1.0",
     "three": "^0.75"
@@ -11,6 +11,7 @@
     "url": "git+https://github.com/Drenerdo/bernie360.git"
   },
   "keywords": [
-    "vr"
+    "vr",
+    "Bernie Sanders"
   ]
 }

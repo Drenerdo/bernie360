@@ -27,12 +27,12 @@ function init() {
     // video.crossorigin = "anonymous";
     if (isMobile()) {
         // lower res for mobile
-        video.src = 'bernie_stereo_1080_web_optimized.mp4';
+        video.src = '/static/bernie_stereo_1080_web_optimized.mp4';
     } else {
         // high res, video can autostart on desktop
         // video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/bernie_stereo_1024.mp4';
         // video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
-        video.src = 'BernieStereoHighResBronx.mp4';
+        video.src = '/static/BernieStereoHighResBronx.mp4';
     }
 
     texture = new THREE.VideoTexture( video );

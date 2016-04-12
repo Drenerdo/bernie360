@@ -40,7 +40,8 @@ function init() {
     if (isMobile()) {
         // lower res for mobile
         //video.src = '/static/bernie_stereo_1080_web_optimized.mp4';
-        video.src = '/static/bernie_stereo_1024_web_optimized.mp4';
+        //video.src = '/static/bernie_stereo_1024_web_optimized.mp4';
+        video.src = '/static/bernie_stereo_1080_web_optimized_b.mp4';
     } else {
         // high res, video can autostart on desktop
         //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
@@ -146,7 +147,7 @@ function init() {
         if (!isPlaying) {
             isPlaying = true;
             video.play();
-            addBoxGraph(scene, 10000);
+            addBoxChart(scene, 10000);
             addPieChart(scene, 20000);
             addLineAreaChart(scene, 30000);
         }

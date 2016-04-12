@@ -1,20 +1,25 @@
-function addBoxGraph(scene, fadeInTime, fadeOutTime) {
+function addBoxChart(scene, fadeInTime, fadeOutTime) {
     "use strict";
     // bar / box graph
     var colors = [0xff0000, 0xff2200, 0xff4400, 0xff6600, 0xff8800];
     var boxMeshes = [];
     var boxGeom = new THREE.BoxBufferGeometry(0.75, 1, 0.75);
+    var parent = new THREE.Object3D();
+    parent.matrixAutoUpdate = false;
     for (var i = 0; i < colors.length; i++) {
         var boxMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
         var boxMesh = new THREE.Mesh(boxGeom, boxMaterial);
         boxMesh.matrixAutoUpdate = false;
         boxMesh.scale.set(1, 1 + i, 1);
-        boxMesh.position.set(-2 + i, 0.75 + 0.5*boxMesh.scale.y, -3);
+        boxMesh.position.set(-2 + i, 0.75 + 0.5*boxMesh.scale.y, 0);
         boxMesh.updateMatrix();
-        scene.add(boxMesh);
+        parent.add(boxMesh);
         boxMeshes.push(boxMesh);
     }
-
+    parent.rotation.z = -Math.PI / 2;
+    parent.position.set(-4, 4, -4);
+    parent.updateMatrix();
+    scene.add(parent);
     function fadeIn() {
         var fadeInInterval;
         fadeInInterval = setInterval( function () {
@@ -27,7 +32,7 @@ function addBoxGraph(scene, fadeInTime, fadeOutTime) {
                 clearInterval(fadeInInterval);
                 setTimeout(fadeOut, 10000);
             }
-        }, 40);
+        }, 30);
     }
 
     setTimeout(fadeIn, fadeInTime);
@@ -43,7 +48,7 @@ function addBoxGraph(scene, fadeInTime, fadeOutTime) {
             if (boxMaterial.opacity === 1) {
                 clearInterval(fadeOutInterval);
             }
-        }, 40);
+        }, 30);
     }
 
 }

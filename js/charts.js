@@ -23,7 +23,7 @@ function addBoxGraph(scene, fadeInTime, fadeOutTime) {
                 boxMaterial.opacity += 0.01 - 0.0001*i;
                 boxMaterial.opacity = Math.min(1, boxMaterial.opacity);
             }
-            if (boxMeshes[boxMeshes.length-1].material.opacity === 1) {
+            if (boxMaterial.opacity === 1) {
                 clearInterval(fadeInInterval);
                 setTimeout(fadeOut, 10000);
             }
@@ -42,7 +42,7 @@ function addBoxGraph(scene, fadeInTime, fadeOutTime) {
             }
             if (boxMaterial.opacity === 1) {
                 clearInterval(fadeOutInterval);
-            }            
+            }
         }, 40);
     }
 
@@ -105,6 +105,7 @@ function makeLineAreaBufferGeometry(x, y, depth) {
     points.push(new THREE.Vector2(x[nx-1], 0));
     var shape = new THREE.Shape(points);
     var geom = shape.extrude({bevelEnabled: false, amount: depth});
+    geom.translate(-x[0], 0, 0);
     var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geom);
     geom.dispose();
     return bufferGeom;
@@ -113,13 +114,13 @@ function makeLineAreaBufferGeometry(x, y, depth) {
 
 function addLineAreaChart(scene, fadeInTime, fadeOutTime) {
     "use strict";
-    var x = [0, 1, 2, 3, 4, 5];
-    var y = [0.2, 0.5, 0.7, 0.4, 0.3, 0.4];
-    var geom = makeLineAreaBufferGeometry(x, y, 1);
+    var geom = makeLineAreaBufferGeometry(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, 0.2);
+    geom.computeBoundingBox();
     var material = new THREE.MeshLambertMaterial({color: 0x0000ff});
     var mesh = new THREE.Mesh(geom, material);
     mesh.matrixAutoUpdate = false;
     mesh.position.set(0, 3, -6);
+    mesh.scale.set(4 / (geom.boundingBox.max.x - geom.boundingBox.min.x), 2 / (geom.boundingBox.max.y - geom.boundingBox.min.y), 1);
     mesh.updateMatrix();
     scene.add(mesh);
 }

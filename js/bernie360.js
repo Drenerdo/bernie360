@@ -64,19 +64,21 @@ function init() {
     ( function () {
         // create video sphere for left eye
         var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
-        geometry.scale( 1, 1, 1 );
+        geometry.scale( -1, 1, 1 );
         var uvs = geometry.faceVertexUvs[ 0 ];
         for ( var i = 0; i < uvs.length; i ++ ) {
             for ( var j = 0; j < 3; j ++ ) {
+                // uvs[ i ][ j ].y *= 0.5;
                 uvs[ i ][ j ].y *= 0.5;
+                uvs[ i ][ j ].y += 0.5;
             }
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
         geometry.dispose();
-        var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
+        var material = new THREE.MeshBasicMaterial( { map: texture } );
         var mesh = new THREE.Mesh( bufferGeom, material );
         mesh.matrixAutoUpdate = false;
-        mesh.rotation.y = Math.PI / 2;
+        mesh.rotation.y = -Math.PI / 2;
         mesh.updateMatrix();
         mesh.layers.set( 1 ); // display in left eye only
         scene.add( mesh );
@@ -85,20 +87,21 @@ function init() {
     ( function () {
         // create video sphere for right eye
         var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
-        geometry.scale( 1, 1, 1 );
+        geometry.scale( -1, 1, 1 );
         var uvs = geometry.faceVertexUvs[ 0 ];
         for ( var i = 0; i < uvs.length; i ++ ) {
             for ( var j = 0; j < 3; j ++ ) {
+                // uvs[ i ][ j ].y *= 0.5;
+                // uvs[ i ][ j ].y += 0.5;
                 uvs[ i ][ j ].y *= 0.5;
-                uvs[ i ][ j ].y += 0.5;
             }
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
         geometry.dispose();
-        var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
+        var material = new THREE.MeshBasicMaterial( { map: texture } );
         var mesh = new THREE.Mesh( bufferGeom, material );
         mesh.matrixAutoUpdate = false;
-        mesh.rotation.y = Math.PI / 2;
+        mesh.rotation.y = -Math.PI / 2;
         mesh.updateMatrix();
         mesh.layers.set( 2 ); // display in right eye only
         scene.add( mesh );
@@ -134,9 +137,12 @@ function init() {
         }
     }
 
-    function animate() {
+    var lt = 0;
+    function animate(t) {
+        var dt = (t - lt) * 0.001;
         requestAnimationFrame( animate );
         render();
+        lt = t;
     }
 
     function render() {

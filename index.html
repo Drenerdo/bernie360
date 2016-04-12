@@ -17,11 +17,20 @@
 				padding: 0;
  				overflow: hidden;
 			}
+      #webgl-canvas {
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
 		</style>
 
 	</head>
 
 	<body onload="init()">
+
+    <canvas id="webgl-canvas"></canvas>
 
 		<div id="container"></div>
 
@@ -65,9 +74,9 @@
 		<script src="/static/node_modules/three/examples/js/effects/VREffect.js"></script>
 		<script src="/static/node_modules/three/examples/js/controls/VRControls.js"></script>
 
-		<script src="/static/utils.js"></script>
-
-		<script src="/static/bernie360.js"></script>
+		<script src="/static/js/utils.js"></script>
+    <script src="/static/js/charts.js"></script>
+		<script src="/static/js/bernie360.js"></script>
 
 	</body>
 </html>

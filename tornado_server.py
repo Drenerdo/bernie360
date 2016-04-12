@@ -3,11 +3,11 @@ import logging
 _logger = logging.getLogger(__name__)
 from operator import itemgetter
 
-from tornado.web import Application, RequestHandler, StaticFileHandler
+from tornado.web import Application, RequestHandler
 from tornado.ioloop import IOLoop
 
 config = {
-    'DEBUG': True,
+    'DEBUG': False,
     'PORT' : 5000
 }
 
@@ -17,7 +17,6 @@ class MainHandler(RequestHandler):
 
 def main():
     root_dir = os.path.abspath(os.path.split(__file__)[0])
-    print(root_dir)
     app = Application([(r'/', MainHandler)],
                       debug=config.get('DEBUG', False),
                       static_path=root_dir,

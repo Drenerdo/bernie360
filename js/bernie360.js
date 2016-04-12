@@ -1,7 +1,8 @@
 function init() {
     "use strict";
-
     console.log('navigator.userAgent = %s', navigator.userAgent);
+
+    THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
     var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('webgl-canvas')});
 
@@ -12,6 +13,7 @@ function init() {
     var effect = new THREE.VREffect( renderer );
 
     var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera.matrixAutoUpdate = true;
     camera.layers.enable( 1 ); // render left view when no stereo available
 
     var controls = new THREE.VRControls( camera );
@@ -60,16 +62,16 @@ function init() {
     texture.generateMipmaps = false;
 
     var scene = new THREE.Scene();
+    // scene.autoUpdate = false;
 
     // this light illuminates the 3D charts
     var directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.matrixAutoUpdate = false;
     directionalLight.position.set(50, 30, 20);
     directionalLight.updateMatrix();
     scene.add(directionalLight);
 
     var needsFlip = false;
-    if (navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
+    if (/android/i.test(navigator.userAgent) && navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
         needsFlip = true;
     }
 
@@ -89,7 +91,6 @@ function init() {
         geometry.dispose();
         var material = new THREE.MeshBasicMaterial( { map: texture } );
         var mesh = new THREE.Mesh( bufferGeom, material );
-        mesh.matrixAutoUpdate = false;
         mesh.rotation.y = -Math.PI / 2;
         mesh.updateMatrix();
         mesh.layers.set( 1 ); // display in left eye only
@@ -112,7 +113,6 @@ function init() {
         geometry.dispose();
         var material = new THREE.MeshBasicMaterial( { map: texture } );
         var mesh = new THREE.Mesh( bufferGeom, material );
-        mesh.matrixAutoUpdate = false;
         mesh.rotation.y = -Math.PI / 2;
         mesh.updateMatrix();
         mesh.layers.set( 2 ); // display in right eye only

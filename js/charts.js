@@ -100,68 +100,86 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
     setTimeout(fadeIn, fadeInTime);
 }
 
-function makeLineAreaBufferGeometry(x, y, depth) {
+var makeLineAreaChart = ( function () {
     "use strict";
-    var nx = x.length;
-    var points = [];
-    for (var i = nx-1; i >= 0; i--) {
-        points.push(new THREE.Vector2(x[i], y[i]));
-    }
-    points.push(new THREE.Vector2(x[0], 0));
-    points.push(new THREE.Vector2(x[nx-1], 0));
-    var shape = new THREE.Shape(points);
-    var geom = shape.extrude({bevelEnabled: false, amount: depth});
-    geom.translate(-x[0], 0, 0);
-    var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geom);
-    geom.dispose();
-    return bufferGeom;
-}
+    const DEFAULT_OPTIONS = {
+        areaColor: 0x0000ff,
+        yMin: 0,
+        depth: 0,
+
+    };
+    return function (xValues, yValues, title, xLabel, yLabel, options) {
+        "use strict";
+        options = options || {};
+        for (var key in DEFAULT_OPTIONS) {
+            if (options[key] === undefined) options[key] = DEFAULT_OPTIONS[key];
+        }
+
+        var chart = new THREE.Object3D();
+
+        var nx = xValues.length;
+        var points = [];
+        for (var i = nx - 1; i >= 0; i--) {
+            points.push(new THREE.Vector2(xValues[i], yValues[i]));
+        }
+        points.push(new THREE.Vector2(x[0], 0));
+        points.push(new THREE.Vector2(x[nx-1], 0));
+        var shape = new THREE.Shape(points);
+        var geom = shape.extrude({bevelEnabled: false, amount: depth});
+        geom.translate(-x[0], 0, 0);
+        var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geom);
+        geom.dispose();
+        bufferGeom.computeBoundingBox();
+
+        var material = new THREE.MeshLambertMaterial({color: options.areaColor});
+
+        var mesh = new THREE.Mesh(geom, material);
+        mesh.scale.set(4 / (geom.boundingBox.max.x - geom.boundingBox.min.x), 2 / (geom.boundingBox.max.y - geom.boundingBox.min.y), 1);
+        mesh.updateMatrix();
+        chart.add(mesh);
+
+        var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
+
+        var loadingManager = new THREE.LoadingManager(onLoad);
+        var textureLoader = new THREE.TextureLoader(loadingManager);
+        var titleTexture = textureLoader.load(title);
+        var xLabelTexture = textureLoader.load(xLabel);
+        var yLabelTexture = textureLoader.load(yLabel);
+
+        function onLoad() {
+            var size = 0.25;
+            var aspect, material;
+            aspect = titleTexture.image.width / titleTexture.image.height;
+            material = new THREE.MeshBasicMaterial({color: 0xffffff, map: titleTexture, transparent: true});
+            var title = new THREE.Mesh(quadGeom, material);
+            title.matrixAutoUpdate = false;
+            title.scale.set(aspect * size, size, 1);
+            title.position.set(0.5 * title.scale.x, 2 + 0.5 * title.scale.y, 0);
+            title.updateMatrix();
+            chart.add(title);
+            // y axis:
+            aspect = yTexture.image.width / yTexture.image.height;
+            material = new THREE.MeshBasicMaterial({color: 0xffffff, map: yTexture, transparent: true});
+            var yAxis = new THREE.Mesh(quadGeom, material);
+            yAxis.matrixAutoUpdate = false;
+            yAxis.scale.set(8*aspect * size, 8*size, 1);
+            yAxis.position.set(-yAxis.scale.x, 0.5 * yAxis.scale.y, 0);
+            yAxis.updateMatrix();
+            chart.add(yAxis);
+
+            chart.position.set(0, 3, -6);
+            chart.updateMatrix();
+            scene.add(chart);
+        }
+        return chart;
+    };
+} )();
 
 function addLineAreaChart(scene, fadeInTime, fadeOutTime) {
     "use strict";
-    var chart = new THREE.Object3D();
-    chart.matrixAutoUpdate = false;
-    var geom = makeLineAreaBufferGeometry(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, 0.2);
-    var material = new THREE.MeshLambertMaterial({color: 0x0000ff});
-    var mesh = new THREE.Mesh(geom, material);
-    mesh.matrixAutoUpdate = false;
-    geom.computeBoundingBox();
-    mesh.scale.set(4 / (geom.boundingBox.max.x - geom.boundingBox.min.x), 2 / (geom.boundingBox.max.y - geom.boundingBox.min.y), 1);
-    mesh.updateMatrix();
-    chart.add(mesh);
-    var loadingManager = new THREE.LoadingManager(onLoad);
-    var textureLoader = new THREE.TextureLoader(loadingManager);
+    var chart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, );
 
-    var titleTexture = textureLoader.load('/static/img/inequality_title.png');
-    var yTexture = textureLoader.load('/static/img/inequality_ylabels.png');
 
-    function onLoad() {
-        var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
-        var size = 0.25;
-        var aspect, material;
-        // chart title:
-        aspect = titleTexture.image.width / titleTexture.image.height;
-        material = new THREE.MeshBasicMaterial({color: 0xffffff, map: titleTexture, transparent: true});
-        var title = new THREE.Mesh(quadGeom, material);
-        title.matrixAutoUpdate = false;
-        title.scale.set(aspect * size, size, 1);
-        title.position.set(0.5 * title.scale.x, 2 + 0.5 * title.scale.y, 0);
-        title.updateMatrix();
-        chart.add(title);
-        // y axis:
-        aspect = yTexture.image.width / yTexture.image.height;
-        material = new THREE.MeshBasicMaterial({color: 0xffffff, map: yTexture, transparent: true});
-        var yAxis = new THREE.Mesh(quadGeom, material);
-        yAxis.matrixAutoUpdate = false;
-        yAxis.scale.set(8*aspect * size, 8*size, 1);
-        yAxis.position.set(-yAxis.scale.x, 0.5 * yAxis.scale.y, 0);
-        yAxis.updateMatrix();
-        chart.add(yAxis);
-
-        chart.position.set(0, 3, -6);
-        chart.updateMatrix();
-        scene.add(chart);
-    }
 }
 
 function makeTextMesh(text) {

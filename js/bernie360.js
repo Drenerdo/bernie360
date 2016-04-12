@@ -45,7 +45,8 @@ function init() {
     } else {
         // high res, video can autostart on desktop
         //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
-        video.src = '/static/BernieStereoHighResBronx.mp4';
+        //video.src = '/static/BernieStereoHighResBronx.mp4';
+        video.src = '/static/bernie_stereo_2160_web_optimized.mp4';
     }
 
     var texture = new THREE.VideoTexture( video );

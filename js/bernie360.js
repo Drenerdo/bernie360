@@ -1,9 +1,7 @@
 function init() {
     "use strict";
 
-    if ( WEBVR.isLatestAvailable() === false ) {
-        console.warn( 'deprecated version of the WebVR API is being used' );
-    }
+    console.log('navigator.userAgent = %s', navigator.userAgent);
 
     var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('webgl-canvas')});
 
@@ -23,11 +21,15 @@ function init() {
     effect.setSize( window.innerWidth, window.innerHeight );
 
     if ( WEBVR.isAvailable() === true ) {
+        if ( WEBVR.isLatestAvailable() === false ) {
+            console.warn( 'deprecated version of the WebVR API is being used' );
+        }
+
         var button = WEBVR.getButton( effect );
         // button.onclick = function () {
         //     effect.setFullScreen(true);
         //     controls.resetPose();
-        // }
+        // };
         document.body.appendChild( button );
     }
 
@@ -37,10 +39,11 @@ function init() {
 
     if (isMobile()) {
         // lower res for mobile
-        video.src = '/static/bernie_stereo_1080_web_optimized.mp4';
+        //video.src = '/static/bernie_stereo_1080_web_optimized.mp4';
+        video.src = '/static/bernie_stereo_1024_web_optimized.mp4';
     } else {
         // high res, video can autostart on desktop
-        // video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
+        //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
         video.src = '/static/BernieStereoHighResBronx.mp4';
     }
 
@@ -58,8 +61,15 @@ function init() {
 
     // this light illuminates the 3D charts
     var directionalLight = new THREE.DirectionalLight(0xffffff);
+    directionalLight.matrixAutoUpdate = false;
     directionalLight.position.set(50, 30, 20);
+    directionalLight.updateMatrix();
     scene.add(directionalLight);
+
+    var needsFlip = false;
+    if (navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
+        needsFlip = true;
+    }
 
     ( function () {
         // create video sphere for left eye
@@ -68,9 +78,9 @@ function init() {
         var uvs = geometry.faceVertexUvs[ 0 ];
         for ( var i = 0; i < uvs.length; i ++ ) {
             for ( var j = 0; j < 3; j ++ ) {
-                // uvs[ i ][ j ].y *= 0.5;
                 uvs[ i ][ j ].y *= 0.5;
                 uvs[ i ][ j ].y += 0.5;
+                if (needsFlip) uvs[ i ][ j ].y = 1 - uvs[ i ][ j ].y;
             }
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
@@ -91,9 +101,9 @@ function init() {
         var uvs = geometry.faceVertexUvs[ 0 ];
         for ( var i = 0; i < uvs.length; i ++ ) {
             for ( var j = 0; j < 3; j ++ ) {
-                // uvs[ i ][ j ].y *= 0.5;
-                // uvs[ i ][ j ].y += 0.5;
                 uvs[ i ][ j ].y *= 0.5;
+                //uvs[ i ][ j ].y += 0.5;
+                if (needsFlip) uvs[ i ][ j ].y = 1 - uvs[ i ][ j ].y;
             }
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
@@ -120,8 +130,13 @@ function init() {
     if (!isMobile()) {
         startVideo();
     } else {
+        var mesh = makeTextMesh('Touch to begin!');
+        mesh.position.set(0, 0, -2);
+        mesh.updateMatrix();
+        scene.add(mesh);
         document.body.addEventListener('click', function () {
             startVideo();
+            scene.remove(mesh);
         });
     }
 

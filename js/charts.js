@@ -69,7 +69,7 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
         var sliceMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
         var sliceMesh = new THREE.Mesh(sliceGeom, sliceMaterial);
         sliceMesh.matrixAutoUpdate = false;
-        sliceMesh.rotation.x = 0.8 * Math.PI / 2;
+        sliceMesh.rotation.x = 1.2 * Math.PI / 2;
         sliceMesh.scale.set(0.85, 0.85, 0.85);
         sliceMesh.position.set(3.5, 1.5, -3);
         sliceMesh.updateMatrix();
@@ -124,5 +124,25 @@ function addLineAreaChart(scene, fadeInTime, fadeOutTime) {
     scene.add(mesh);
 }
 
-// function displayText(text) {
-// }
+function makeTextMesh(text) {
+    "use strict";
+    var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
+    var canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 128;
+    var ctx = canvas.getContext('2d');
+    ctx.font = "28px serif";
+    // var textMetrics = ctx.measureText(text);
+    // canvas.width = textMetrics.width / 0.5;
+    ctx.fillStyle = 'rgb(255, 200, 150)';
+    ctx.fillText(text, 0, 48);
+    var texture = new THREE.Texture(canvas, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
+    var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+    material.map.needsUpdate = true;
+    var mesh = new THREE.Mesh(quadGeom, material);
+    mesh.matrixAutoUpdate = false;
+    var aspect = canvas.width / canvas.height;
+    mesh.scale.set(aspect, 1, 1);
+    mesh.updateMatrix();
+    return mesh;
+}

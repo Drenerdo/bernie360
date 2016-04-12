@@ -17,7 +17,7 @@ function addBoxChart(scene, fadeInTime, fadeOutTime) {
         boxMeshes.push(boxMesh);
     }
     parent.rotation.z = -Math.PI / 2;
-    parent.position.set(-4, 4, -4);
+    parent.position.set(-6, 4, -4);
     parent.updateMatrix();
     scene.add(parent);
     function fadeIn() {

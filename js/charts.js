@@ -18,6 +18,7 @@ function addBoxChart(scene, fadeInTime, fadeOutTime) {
     }
     parent.rotation.z = -Math.PI / 2;
     parent.position.set(-6, 4, -4);
+    parent.scale.set(0.75, 0.75, 0.75);
     parent.updateMatrix();
     scene.add(parent);
     function fadeIn() {
@@ -116,18 +117,51 @@ function makeLineAreaBufferGeometry(x, y, depth) {
     return bufferGeom;
 }
 
-
 function addLineAreaChart(scene, fadeInTime, fadeOutTime) {
     "use strict";
+    var chart = new THREE.Object3D();
+    chart.matrixAutoUpdate = false;
     var geom = makeLineAreaBufferGeometry(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, 0.2);
-    geom.computeBoundingBox();
     var material = new THREE.MeshLambertMaterial({color: 0x0000ff});
     var mesh = new THREE.Mesh(geom, material);
     mesh.matrixAutoUpdate = false;
-    mesh.position.set(0, 3, -6);
+    geom.computeBoundingBox();
     mesh.scale.set(4 / (geom.boundingBox.max.x - geom.boundingBox.min.x), 2 / (geom.boundingBox.max.y - geom.boundingBox.min.y), 1);
     mesh.updateMatrix();
-    scene.add(mesh);
+    chart.add(mesh);
+    var loadingManager = new THREE.LoadingManager(onLoad);
+    var textureLoader = new THREE.TextureLoader(loadingManager);
+
+    var titleTexture = textureLoader.load('/static/img/inequality_title.png');
+    var yTexture = textureLoader.load('/static/img/inequality_ylabels.png');
+
+    function onLoad() {
+        var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
+        var size = 0.25;
+        var aspect, material;
+        // chart title:
+        aspect = titleTexture.image.width / titleTexture.image.height;
+        material = new THREE.MeshBasicMaterial({color: 0xffffff, map: titleTexture, transparent: true});
+        var title = new THREE.Mesh(quadGeom, material);
+        title.matrixAutoUpdate = false;
+        title.scale.set(aspect * size, size, 1);
+        title.position.set(0.5 * title.scale.x, 2 + 0.5 * title.scale.y, 0);
+        title.updateMatrix();
+        chart.add(title);
+        // y axis:
+        aspect = yTexture.image.width / yTexture.image.height;
+        material = new THREE.MeshBasicMaterial({color: 0xffffff, map: yTexture, transparent: true});
+        var yAxis = new THREE.Mesh(quadGeom, material);
+        yAxis.matrixAutoUpdate = false;
+        yAxis.scale.set(8*aspect * size, 8*size, 1);
+        yAxis.position.set(-yAxis.scale.x, 0.5 * yAxis.scale.y, 0);
+        yAxis.updateMatrix();
+        chart.add(yAxis);
+
+        chart.position.set(0, 3, -6);
+        chart.updateMatrix();
+        scene.add(chart);
+    }
 }
 
 function makeTextMesh(text) {

@@ -1,16 +1,16 @@
 function addBoxGraph(scene, fadeInTime, fadeOutTime) {
     "use strict";
     // bar / box graph
-
     var colors = [0xff0000, 0xff2200, 0xff4400, 0xff6600, 0xff8800];
     var boxMeshes = [];
-
     var boxGeom = new THREE.BoxBufferGeometry(0.75, 1, 0.75);
     for (var i = 0; i < colors.length; i++) {
         var boxMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
         var boxMesh = new THREE.Mesh(boxGeom, boxMaterial);
+        boxMesh.matrixAutoUpdate = false;
         boxMesh.scale.set(1, 1 + i, 1);
         boxMesh.position.set(-2 + i, 0.75 + 0.5*boxMesh.scale.y, -3);
+        boxMesh.updateMatrix();
         scene.add(boxMesh);
         boxMeshes.push(boxMesh);
     }
@@ -25,21 +25,26 @@ function addBoxGraph(scene, fadeInTime, fadeOutTime) {
             }
             if (boxMeshes[boxMeshes.length-1].material.opacity === 1) {
                 clearInterval(fadeInInterval);
+                setTimeout(fadeOut, 10000);
             }
         }, 40);
     }
 
     setTimeout(fadeIn, fadeInTime);
 
-    // function fadeOut() {
-    //     for (var i = 0; i < boxMeshes.length; i++) {
-    //         var boxMaterial = boxMeshes[i].material;
-    //         boxMaterial.opacity -= (0.01 - 0.0001*i);
-    //         if (boxMaterial.opacity === 1) {
-    //             clearInterval(fadeOutInterval);
-    //         }
-    //     }
-    // }
+    function fadeOut() {
+        var fadeOutInterval;
+        fadeOutInterval = setInterval( function () {
+            for (var i = 0; i < boxMeshes.length; i++) {
+                var boxMaterial = boxMeshes[i].material;
+                boxMaterial.opacity -= (0.01 - 0.0001*i);
+                boxMaterial.opacity = Math.max(0, boxMaterial.opacity);
+            }
+            if (boxMaterial.opacity === 1) {
+                clearInterval(fadeOutInterval);
+            }            
+        }, 40);
+    }
 
 }
 
@@ -63,9 +68,11 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
                                                          thetaLengths[i]); // angle swept
         var sliceMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
         var sliceMesh = new THREE.Mesh(sliceGeom, sliceMaterial);
+        sliceMesh.matrixAutoUpdate = false;
         sliceMesh.rotation.x = 0.8 * Math.PI / 2;
-        sliceMesh.position.set(3.5, 1, -3);
         sliceMesh.scale.set(0.85, 0.85, 0.85);
+        sliceMesh.position.set(3.5, 1.5, -3);
+        sliceMesh.updateMatrix();
         scene.add(sliceMesh);
         sliceMeshes.push(sliceMesh);
     }
@@ -88,6 +95,7 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
 }
 
 function makeLineAreaBufferGeometry(x, y, depth) {
+    "use strict";
     var nx = x.length;
     var points = [];
     for (var i = nx-1; i >= 0; i--) {
@@ -102,10 +110,19 @@ function makeLineAreaBufferGeometry(x, y, depth) {
     return bufferGeom;
 }
 
-// function addLineAreaChart(scene, fadeInTime, fadeOutTime) {
-//     "use strict";
 
-// }
+function addLineAreaChart(scene, fadeInTime, fadeOutTime) {
+    "use strict";
+    var x = [0, 1, 2, 3, 4, 5];
+    var y = [0.2, 0.5, 0.7, 0.4, 0.3, 0.4];
+    var geom = makeLineAreaBufferGeometry(x, y, 1);
+    var material = new THREE.MeshLambertMaterial({color: 0x0000ff});
+    var mesh = new THREE.Mesh(geom, material);
+    mesh.matrixAutoUpdate = false;
+    mesh.position.set(0, 3, -6);
+    mesh.updateMatrix();
+    scene.add(mesh);
+}
 
 // function displayText(text) {
 // }

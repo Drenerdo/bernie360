@@ -71,9 +71,13 @@ function init() {
                 uvs[ i ][ j ].y *= 0.5;
             }
         }
+        var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
+        geometry.dispose();
         var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
-        var mesh = new THREE.Mesh( geometry, material );
+        var mesh = new THREE.Mesh( bufferGeom, material );
+        mesh.matrixAutoUpdate = false;
         mesh.rotation.y = Math.PI / 2;
+        mesh.updateMatrix();
         mesh.layers.set( 1 ); // display in left eye only
         scene.add( mesh );
     } )();
@@ -89,9 +93,13 @@ function init() {
                 uvs[ i ][ j ].y += 0.5;
             }
         }
+        var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
+        geometry.dispose();
         var material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.BackSide } );
-        var mesh = new THREE.Mesh( geometry, material );
+        var mesh = new THREE.Mesh( bufferGeom, material );
+        mesh.matrixAutoUpdate = false;
         mesh.rotation.y = Math.PI / 2;
+        mesh.updateMatrix();
         mesh.layers.set( 2 ); // display in right eye only
         scene.add( mesh );
     } )();
@@ -103,21 +111,6 @@ function init() {
         camera.updateProjectionMatrix();
         effect.setSize( window.innerWidth, window.innerHeight );
     }
-
-
-
-// ************************************************
-    ( function () {
-        var x = [0, 1, 2, 3, 4, 5];
-        var y = [0.2, 0.5, 0.7, 0.4, 0.3, 0.4];
-        var geom = makeLineAreaBufferGeometry(x, y, 1);
-        var material = new THREE.MeshLambertMaterial({color: 0x0000ff});
-        var mesh = new THREE.Mesh(geom, material);
-        mesh.position.set(0, 1.25, -10);
-        scene.add(mesh);
-    } )();
-// ************************************************
-
 
     animate();
 
@@ -137,6 +130,7 @@ function init() {
             video.play();
             addBoxGraph(scene, 10000);
             addPieChart(scene, 20000);
+            addLineAreaChart(scene, 30000);
         }
     }
 

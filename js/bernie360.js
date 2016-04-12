@@ -31,10 +31,6 @@ function init() {
         document.body.appendChild( button );
     }
 
-    document.body.addEventListener('click', function () {
-        startVideo();
-    });
-
     var video = document.createElement( 'video' );
 
     // video.crossOrigin = "anonymous";
@@ -100,9 +96,6 @@ function init() {
         scene.add( mesh );
     } )();
 
-    addBoxGraph(scene, 10000);
-    addPieChart(scene, 20000);
-
     window.addEventListener( 'resize', onWindowResize, false );
 
     function onWindowResize() {
@@ -111,9 +104,30 @@ function init() {
         effect.setSize( window.innerWidth, window.innerHeight );
     }
 
-    render();
 
-    if (!isMobile()) startVideo();
+
+// ************************************************
+    ( function () {
+        var x = [0, 1, 2, 3, 4, 5];
+        var y = [0.2, 0.5, 0.7, 0.4, 0.3, 0.4];
+        var geom = makeLineAreaBufferGeometry(x, y, 1);
+        var material = new THREE.MeshLambertMaterial({color: 0x0000ff});
+        var mesh = new THREE.Mesh(geom, material);
+        mesh.position.set(0, 1.25, -10);
+        scene.add(mesh);
+    } )();
+// ************************************************
+
+
+    animate();
+
+    if (!isMobile()) {
+        startVideo();
+    } else {
+        document.body.addEventListener('click', function () {
+            startVideo();
+        });
+    }
 
     var isPlaying = false;
 
@@ -121,7 +135,8 @@ function init() {
         if (!isPlaying) {
             isPlaying = true;
             video.play();
-            animate();
+            addBoxGraph(scene, 10000);
+            addPieChart(scene, 20000);
         }
     }
 

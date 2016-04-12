@@ -87,6 +87,25 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
     setTimeout(fadeIn, fadeInTime);
 }
 
-function displayText(text) {
-    // TODO
+function makeLineAreaBufferGeometry(x, y, depth) {
+    var nx = x.length;
+    var points = [];
+    for (var i = nx-1; i >= 0; i--) {
+        points.push(new THREE.Vector2(x[i], y[i]));
+    }
+    points.push(new THREE.Vector2(x[0], 0));
+    points.push(new THREE.Vector2(x[nx-1], 0));
+    var shape = new THREE.Shape(points);
+    var geom = shape.extrude({bevelEnabled: false, amount: depth});
+    var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geom);
+    geom.dispose();
+    return bufferGeom;
 }
+
+// function addLineAreaChart(scene, fadeInTime, fadeOutTime) {
+//     "use strict";
+
+// }
+
+// function displayText(text) {
+// }

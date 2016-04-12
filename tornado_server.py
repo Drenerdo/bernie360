@@ -7,7 +7,7 @@ from tornado.web import Application, RequestHandler
 from tornado.ioloop import IOLoop
 
 config = {
-    'DEBUG': True,
+    'DEBUG': False,
     'PORT' : 5000
 }
 

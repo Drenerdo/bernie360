@@ -41,6 +41,7 @@
       /**
        * webvr-polyfill configuration
        */
+      NO_WAKELOCK: true,
       // Forces availability of VR mode.
       // FORCE_ENABLE_VR: true, // Default: false.
       // Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
@@ -68,10 +69,14 @@
       //DIRTY_SUBMIT_FRAME_BINDINGS: true // default: false
     };
     </script>
+
     <script src="/static/node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
 
 		<script src="/static/node_modules/three/examples/js/WebVR.js"></script>
-		<script src="/static/node_modules/three/examples/js/effects/VREffect.js"></script>
+
+		<!-- <script src="/static/node_modules/three/examples/js/effects/VREffect.js"></script> -->
+    <script src="/static/js/libs/VREffect.js"></script>
+
 		<script src="/static/node_modules/three/examples/js/controls/VRControls.js"></script>
 
 		<script src="/static/js/utils.js"></script>

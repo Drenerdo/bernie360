@@ -100,6 +100,9 @@ function init() {
         scene.add( mesh );
     } )();
 
+    addBoxGraph(scene, 10000);
+    addPieChart(scene, 20000);
+
     window.addEventListener( 'resize', onWindowResize, false );
 
     function onWindowResize() {
@@ -119,8 +122,6 @@ function init() {
             isPlaying = true;
             video.play();
             animate();
-            setTimeout(addBoxGraph.bind(null, scene), 5000);
-            setTimeout(addPieChart.bind(null, scene), 12000);
         }
     }
 

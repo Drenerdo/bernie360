@@ -1,4 +1,5 @@
-function addBoxGraph(scene) {
+function addBoxGraph(scene, fadeInTime, fadeOutTime) {
+    "use strict";
     // bar / box graph
 
     var colors = [0xff0000, 0xff2200, 0xff4400, 0xff6600, 0xff8800];
@@ -14,17 +15,21 @@ function addBoxGraph(scene) {
         boxMeshes.push(boxMesh);
     }
 
-    var fadeInInterval;
-    fadeInInterval = setInterval( function () {
-        for (var i = 0; i < boxMeshes.length; i++) {
-            var boxMaterial = boxMeshes[i].material;
-            boxMaterial.opacity += 0.01 - 0.0001*i;
-            boxMaterial.opacity = Math.min(1, boxMaterial.opacity);
-        }
-        if (boxMeshes[boxMeshes.length-1].material.opacity === 1) {
-            clearInterval(fadeInInterval);
-        }
-    }, 30);
+    function fadeIn() {
+        var fadeInInterval;
+        fadeInInterval = setInterval( function () {
+            for (var i = 0; i < boxMeshes.length; i++) {
+                var boxMaterial = boxMeshes[i].material;
+                boxMaterial.opacity += 0.01 - 0.0001*i;
+                boxMaterial.opacity = Math.min(1, boxMaterial.opacity);
+            }
+            if (boxMeshes[boxMeshes.length-1].material.opacity === 1) {
+                clearInterval(fadeInInterval);
+            }
+        }, 40);
+    }
+
+    setTimeout(fadeIn, fadeInTime);
 
     // function fadeOut() {
     //     for (var i = 0; i < boxMeshes.length; i++) {
@@ -38,7 +43,8 @@ function addBoxGraph(scene) {
 
 }
 
-function addPieChart(scene) {
+function addPieChart(scene, fadeInTime, fadeOutTime) {
+    "use strict";
     // pie charts
 
     var colors = [0x008800, 0x00aa44, 0x00bb88];
@@ -64,18 +70,21 @@ function addPieChart(scene) {
         sliceMeshes.push(sliceMesh);
     }
 
-    var fadeInInterval;
-    fadeInInterval = setInterval( function () {
-        for (var i = 0; i < sliceMeshes.length; i++) {
-            var sliceMaterial = sliceMeshes[i].material;
-            sliceMaterial.opacity += 0.01 - 0.001 * i;
-            sliceMaterial.opacity = Math.min(1, sliceMaterial.opacity);
-        }
-        if (sliceMeshes[sliceMeshes.length-1].material.opacity === 1) {
-            clearInterval(fadeInInterval);
-        }
-    }, 30);
+    function fadeIn() {
+        var fadeInInterval;
+        fadeInInterval = setInterval( function () {
+            for (var i = 0; i < sliceMeshes.length; i++) {
+                var sliceMaterial = sliceMeshes[i].material;
+                sliceMaterial.opacity += 0.01 - 0.001 * i;
+                sliceMaterial.opacity = Math.min(1, sliceMaterial.opacity);
+            }
+            if (sliceMeshes[sliceMeshes.length-1].material.opacity === 1) {
+                clearInterval(fadeInInterval);
+            }
+        }, 40);
+    }
 
+    setTimeout(fadeIn, fadeInTime);
 }
 
 function displayText(text) {

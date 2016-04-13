@@ -65,14 +65,14 @@ function init() {
     // scene.autoUpdate = false;
 
     // hemisphere light
-    var light = new THREE.HemisphereLight(0x777777, 0x000000, 0.6);
+    var light = new THREE.HemisphereLight(0x777777, 0x000000, 0.5);
       scene.add(light);
   
 
 
     // this light illuminates the 3D charts
     var objLight = new THREE.PointLight(0xffffff);
-    objLight.position.set(0, 50, 70);
+    objLight.position.set(0, 50, 25);
     objLight.updateMatrix();
     scene.add(objLight);
 

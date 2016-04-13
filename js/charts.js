@@ -6,10 +6,12 @@ function addBoxChart(scene, fadeInTime, fadeOutTime) {
     var boxGeom = new THREE.BoxBufferGeometry(0.75, 1, 0.75);
     var parent = new THREE.Object3D();
     for (var i = 0; i < colors.length; i++) {
-        var boxMaterial = new THREE.MeshPhongMaterial({color: colors[i], transparent: true, opacity: 0});
+        var boxMaterial = new THREE.MeshPhongMaterial({color: colors[i]});
         var boxMesh = new THREE.Mesh(boxGeom, boxMaterial);
-        boxMesh.scale.set(1, 1 + i, 1);
-        boxMesh.position.set(-2 + i, 0.75 + 0.5*boxMesh.scale.y, 0);
+        boxMesh.scale.set(0.75, 1 + i, 0.2);
+        //boxMesh.position.set(-2 + i, 0.75 + 0.5*boxMesh.scale.y, 0);
+        boxMesh.position.set(-10 + i, 0.75*boxMesh.scale.y, 0);
+        boxMesh.rotation.set(90,0,0);
         boxMesh.updateMatrix();
         parent.add(boxMesh);
         boxMeshes.push(boxMesh);
@@ -71,7 +73,7 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
             thetaLengths.slice(0,i).reduce( (p, c) => p + c, 0 ), // start angle
             thetaLengths[i] // angle swept
         );
-        var sliceMaterial = new THREE.MeshPhongMaterial({color: colors[i], transparent: true, opacity: 0});
+        var sliceMaterial = new THREE.MeshPhongMaterial({color: colors[i], opacity: 0, emissive: 1, emissiveIntensity: 1, specular: "red", shininess:50});
         var sliceMesh = new THREE.Mesh(sliceGeom, sliceMaterial);
         sliceMesh.rotation.x = 1.2 * Math.PI / 2;
         sliceMesh.scale.set(0.85, 0.85, 0.85);

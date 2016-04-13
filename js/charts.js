@@ -127,13 +127,13 @@ var makeLineAreaChart = ( function () {
         for (var i = nx - 1; i >= 0; i--) {
             points.push(new THREE.Vector2(xValues[i], yValues[i]));
         }
-        points.push(new THREE.Vector2(x[0], options.yMin));
-        points.push(new THREE.Vector2(x[nx - 1], options.yMin));
+        points.push(new THREE.Vector2(xValues[0], options.yMin));
+        points.push(new THREE.Vector2(xValues[nx - 1], options.yMin));
 
         var shape = new THREE.Shape(points);
         var geom;
         if (options.depth > 0) geom = shape.extrude({bevelEnabled: false, amount: options.depth});
-        else geom = shape.
+        else geom = shape.makeGeometry();
         geom.translate(-xValues[0], -options.yMin, 0);
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geom);
         geom.dispose();

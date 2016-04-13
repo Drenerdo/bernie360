@@ -64,11 +64,17 @@ function init() {
     var scene = new THREE.Scene();
     // scene.autoUpdate = false;
 
+    // hemisphere light
+    var light = new THREE.HemisphereLight(0x777777, 0x000000, 0.6);
+      scene.add(light);
+  
+
+
     // this light illuminates the 3D charts
-    var directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.position.set(50, 30, 20);
-    directionalLight.updateMatrix();
-    scene.add(directionalLight);
+    var objLight = new THREE.PointLight(0xffffff);
+    objLight.position.set(0, 50, 70);
+    objLight.updateMatrix();
+    scene.add(objLight);
 
     var needsFlip = false;
     if (/android/i.test(navigator.userAgent) && navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
@@ -158,8 +164,8 @@ function init() {
         if (!isPlaying) {
             isPlaying = true;
             video.play();
-            addBoxChart(scene, 10000);
-            addPieChart(scene, 20000);
+            addBoxChart(scene, 0);
+            addPieChart(scene, 0);
         }
     }
 

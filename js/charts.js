@@ -6,7 +6,7 @@ function addBoxChart(scene, fadeInTime, fadeOutTime) {
     var boxGeom = new THREE.BoxBufferGeometry(0.75, 1, 0.75);
     var parent = new THREE.Object3D();
     for (var i = 0; i < colors.length; i++) {
-        var boxMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
+        var boxMaterial = new THREE.MeshPhongMaterial({color: colors[i], transparent: true, opacity: 0});
         var boxMesh = new THREE.Mesh(boxGeom, boxMaterial);
         boxMesh.scale.set(1, 1 + i, 1);
         boxMesh.position.set(-2 + i, 0.75 + 0.5*boxMesh.scale.y, 0);
@@ -71,7 +71,7 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
             thetaLengths.slice(0,i).reduce( (p, c) => p + c, 0 ), // start angle
             thetaLengths[i] // angle swept
         );
-        var sliceMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
+        var sliceMaterial = new THREE.MeshPhongMaterial({color: colors[i], transparent: true, opacity: 0});
         var sliceMesh = new THREE.Mesh(sliceGeom, sliceMaterial);
         sliceMesh.rotation.x = 1.2 * Math.PI / 2;
         sliceMesh.scale.set(0.85, 0.85, 0.85);
@@ -105,7 +105,7 @@ var makeLineAreaChart = ( function () {
         width: 1,
         height: 1,
         depth: 0,
-        areaMaterial: new THREE.MeshBasicMaterial({color: 0x0000ff}),
+        areaMaterial: new THREE.MeshPhongMaterial({color: 0x0000ff}),
         titleSize: 0.25,
         yLabelSize: 8,
         xLabelSize: 0.25

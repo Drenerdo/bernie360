@@ -144,13 +144,22 @@ function init() {
 
     var isPlaying = false;
 
+    // var lineAreaChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
+    //     yMin: 0,
+    //     width: 4,
+    //     height: 2,
+    //     depth: 0.1,
+    //     titleImage: '/static/img/inequality_title.png',
+    //     xLabelImage: '/static/img/inequality_xlabels.png',
+    //     yLabelImage: '/static/img/inequality_ylabels.png'
+    // }, function (chart) { scene.add(chart); });
+
     function startVideo() {
         if (!isPlaying) {
             isPlaying = true;
             video.play();
             addBoxChart(scene, 10000);
             addPieChart(scene, 20000);
-            addLineAreaChart(scene, 30000);
         }
     }
 

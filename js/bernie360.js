@@ -28,10 +28,7 @@ function init() {
         }
 
         var button = WEBVR.getButton( effect );
-        // button.onclick = function () {
-        //     effect.setFullScreen(true);
-        //     controls.resetPose();
-        // };
+        // TODO: reset orientation upon entering VR
         document.body.appendChild( button );
     }
 
@@ -62,6 +59,7 @@ function init() {
     texture.generateMipmaps = false;
 
     var scene = new THREE.Scene();
+    // TODO: potential optimization to try later:
     // scene.autoUpdate = false;
 
     // this light illuminates the 3D charts
@@ -70,9 +68,9 @@ function init() {
     directionalLight.updateMatrix();
     scene.add(directionalLight);
 
-    var needsFlip = false;
+    var videoNeedsFlip = false;
     if (/android/i.test(navigator.userAgent) && navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
-        needsFlip = true;
+        videoNeedsFlip = true;
     }
 
     ( function () {
@@ -84,7 +82,7 @@ function init() {
             for ( var j = 0; j < 3; j ++ ) {
                 uvs[ i ][ j ].y *= 0.5;
                 uvs[ i ][ j ].y += 0.5;
-                if (needsFlip) uvs[ i ][ j ].y = 1 - uvs[ i ][ j ].y;
+                if (videoNeedsFlip) uvs[ i ][ j ].y = 1 - uvs[ i ][ j ].y;
             }
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
@@ -106,7 +104,7 @@ function init() {
             for ( var j = 0; j < 3; j ++ ) {
                 uvs[ i ][ j ].y *= 0.5;
                 //uvs[ i ][ j ].y += 0.5;
-                if (needsFlip) uvs[ i ][ j ].y = 1 - uvs[ i ][ j ].y;
+                if (videoNeedsFlip) uvs[ i ][ j ].y = 1 - uvs[ i ][ j ].y;
             }
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
@@ -159,7 +157,7 @@ function init() {
     // });
 
     var textLabel = makeTextLabel('asdf');
-    textLabel.position.set(0, 1, -2);
+    textLabel.position.set(0, 0, -2);
     textLabel.updateMatrix();
     scene.add(textLabel);
 

@@ -98,6 +98,43 @@ function addPieChart(scene, fadeInTime, fadeOutTime) {
     setTimeout(fadeIn, fadeInTime);
 }
 
+var makeTextLabel = ( function () {
+
+    const DEFAULT_OPTIONS = {
+        font: '28px serif',
+        fillStyle: 'rgb(255, 0, 0)'
+    };
+
+    var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
+
+    return function (text, options) {
+        options = options || {};
+        for (var kwarg in DEFAULT_OPTIONS) {
+            if (options[kwarg] === undefined) options[kwarg] = DEFAULT_OPTIONS[kwarg];
+        }
+        var canvas = document.createElement('canvas');
+
+        // var textMetrics = ctx.measureText(text);
+        // canvas.width = textMetrics.width / 0.5;
+        canvas.width = 256;
+        canvas.height = 64;
+
+        var ctx = canvas.getContext('2d');
+        ctx.font = options.font;
+        ctx.fillStyle = options.fillStyle;
+        ctx.fillText(text, 0, 48);
+        var aspect = canvas.width / canvas.height;
+        var texture = new THREE.Texture(canvas, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
+        var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+        material.map.needsUpdate = true;
+        var mesh = new THREE.Mesh(quadGeom, material);
+        // mesh.scale.set(aspect * 0.125 / worldScale.x, 0.125 / worldScale.y, 1 / worldScale.z);
+        // mesh.updateMatrix();
+        return mesh;
+    };
+
+} )();
+
 var makeLineAreaChart = ( function () {
     "use strict";
 
@@ -199,24 +236,24 @@ var makeLineAreaChart = ( function () {
     };
 } )();
 
-function makeTextMesh(text) {
+function makeTextLabel(text) {
     "use strict";
-    var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
     var canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 128;
     var ctx = canvas.getContext('2d');
-    ctx.font = "28px serif";
-    // var textMetrics = ctx.measureText(text);
-    // canvas.width = textMetrics.width / 0.5;
+    ctx.font = "32px serif";
+    canvas.height = 32;
+    var textMetrics = ctx.measureText(text);
+    //canvas.width = 32;
+    canvas.width = textMetrics.width;
     ctx.fillStyle = 'rgb(255, 200, 150)';
-    ctx.fillText(text, 0, 48);
+    ctx.fillText(text, 0, 32);
     var texture = new THREE.Texture(canvas, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
     var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
     material.map.needsUpdate = true;
-    var mesh = new THREE.Mesh(quadGeom, material);
-    var aspect = canvas.width / canvas.height;
-    mesh.scale.set(aspect, 1, 1);
-    mesh.updateMatrix();
+    var geom = new THREE.PlaneBufferGeometry(canvas.width, canvas.height);
+    var mesh = new THREE.Mesh(geom, material);
+    // var aspect = canvas.width / canvas.height;
+    // mesh.scale.set(aspect, 1, 1);
+    // mesh.updateMatrix();
     return mesh;
 }

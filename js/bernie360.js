@@ -4,7 +4,10 @@ function init() {
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
-    var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('webgl-canvas')});
+    var renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById('webgl-canvas'),
+        antialias: !isMobile()
+    });
 
     renderer.setClearColor( 0x101010 );
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -64,7 +67,7 @@ function init() {
 
     // this light illuminates the 3D charts
     var directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.position.set(50, 30, 20);
+    directionalLight.position.set(20, 30, 50);
     directionalLight.updateMatrix();
     scene.add(directionalLight);
 
@@ -125,8 +128,6 @@ function init() {
         effect.setSize( window.innerWidth, window.innerHeight );
     }
 
-    animate();
-
     if (!isMobile()) {
         startVideo();
     } else {
@@ -142,32 +143,35 @@ function init() {
 
     var isPlaying = false;
 
-    // var lineAreaChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
-    //     yMin: 0,
-    //     width: 4,
-    //     height: 2,
-    //     depth: 0.1,
-    //     titleImage: '/static/img/inequality_title.png',
-    //     xLabelImage: '/static/img/inequality_xlabels.png',
-    //     yLabelImage: '/static/img/inequality_ylabels.png'
-    // }, function (chart) {
-    //     chart.position.set(-2, 4, -4);
-    //     chart.updateMatrix();
-    //     scene.add(chart);
-    // });
+    var lineAreaChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
+        yMin: 0,
+        width: 4,
+        height: 2,
+        depth: 0.2,
+        titleImage: '/static/img/inequality_title.png',
+        xLabelImage: '/static/img/inequality_xlabels.png',
+        yLabelImage: '/static/img/inequality_ylabels.png',
+        areaMaterial: new THREE.MeshPhongMaterial({color: 0x2222ff, shininess: 60})
+    }, function (chart) {
+        chart.position.set(-2, 2.5, -4);
+        chart.updateMatrix();
+        scene.add(chart);
+    });
 
     var textLabel = makeTextLabel('asdf');
     textLabel.position.set(0, 0, -2);
     textLabel.updateMatrix();
     scene.add(textLabel);
 
+    animate();
+
     function startVideo() {
-        // if (!isPlaying) {
-        //     isPlaying = true;
-        //     video.play();
-        //     addBoxChart(scene, 10000);
-        //     addPieChart(scene, 20000);
-        // }
+        if (!isPlaying) {
+            isPlaying = true;
+            video.play();
+            addBoxChart(scene, 10000);
+            addPieChart(scene, 20000);
+        }
     }
 
     var lt = 0;

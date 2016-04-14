@@ -15,8 +15,8 @@ function addBoxChart(scene, fadeInTime, fadeOutTime) {
         boxMeshes.push(boxMesh);
     }
     parent.rotation.z = -Math.PI / 2;
-    parent.position.set(-6, 4, -4);
-    parent.scale.set(0.75, 0.75, 0.75);
+    parent.position.set(-7, 4, -4);
+    parent.scale.set(0.65, 0.65, 0.65);
     parent.updateMatrix();
     scene.add(parent);
     function fadeIn() {
@@ -107,10 +107,7 @@ var makeLineAreaChart = ( function () {
         width: 1,
         height: 1,
         depth: 0,
-        areaMaterial: new THREE.MeshBasicMaterial({color: 0x0000ff}),
-        titleSize: 0.25,
-        yLabelSize: 8,
-        xLabelSize: 0.25
+        areaMaterial: new THREE.MeshBasicMaterial({color: 0x0000ff})
     };
 
     var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
@@ -162,38 +159,32 @@ var makeLineAreaChart = ( function () {
         if (options.yLabelImage) yLabelTexture = textureLoader.load(options.yLabelImage);
 
         function onTexturesLoad() {
-            var aspect, material, mesh;
-
+            var material, mesh;
+            var labelSize = options.labelSize || 0.004;
             if (titleTexture) {
-                aspect = titleTexture.image.width / titleTexture.image.height;
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: titleTexture, transparent: true});
                 mesh = new THREE.Mesh(quadGeom, material);
-                mesh.scale.set(aspect * options.titleSize, options.titleSize, 1);
+                mesh.scale.set(labelSize*titleTexture.image.width, labelSize*titleTexture.image.height, 1);//.multiplyScalar(0.25);
                 mesh.position.set(0.5 * mesh.scale.x, 1.1 * options.height + 0.5 * mesh.scale.y, 0);
                 mesh.updateMatrix();
                 chart.add(mesh);
             }
-
             if (xLabelTexture) {
-                aspect = xLabelTexture.image.width / xLabelTexture.image.height;
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: xLabelTexture, transparent: true});
                 mesh = new THREE.Mesh(quadGeom, material);
-                mesh.scale.set(aspect * options.xLabelSize, options.xLabelSize, 1);
+                mesh.scale.set(labelSize*xLabelTexture.image.width, labelSize*xLabelTexture.image.height, 1);//.multiplyScalar(0.25);
                 mesh.position.set(0.5 * mesh.scale.x, -0.5 * mesh.scale.y, 0);
                 mesh.updateMatrix();
                 chart.add(mesh);
             }
-
             if (yLabelTexture) {
-                aspect = yLabelTexture.image.width / yLabelTexture.image.height;
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: yLabelTexture, transparent: true});
                 mesh = new THREE.Mesh(quadGeom, material);
-                mesh.scale.set(aspect * options.yLabelSize, options.yLabelSize, 1);
+                mesh.scale.set(labelSize*yLabelTexture.image.width, labelSize*yLabelTexture.image.height, 1);//.multiplyScalar(0.25);
                 mesh.position.set(-mesh.scale.x, 0.5 * mesh.scale.y, 0);
                 mesh.updateMatrix();
                 chart.add(mesh);
             }
-
             if (onLoad) onLoad(chart);
         }
 
@@ -203,10 +194,12 @@ var makeLineAreaChart = ( function () {
 
 
 var makeTextLabel = ( function () {
+    "use strict";
 
     const DEFAULT_OPTIONS = {
-        font: '32pt serif',
-        fillStyle: 'rgb(0, 0, 0)'
+        font: '48px serif',
+        fillStyle:   'rgb(255, 0, 0)',
+        strokeStyle: 'rgb(255, 0, 0)'
     };
 
     return function (text, options) {
@@ -218,22 +211,21 @@ var makeTextLabel = ( function () {
         var canvas = document.createElement('canvas');
         var ctx = canvas.getContext('2d');
         ctx.font = options.font;
-        ctx.fillStyle = options.fillStyle;
+
         canvas.width = 256; //ctx.measureText(text).width;
-        canvas.height = 256;
+        canvas.height = 64;
+
+        ctx.fillStyle = options.fillStyle;
+        ctx.strokeStyle = options.strokeStyle;
         ctx.fillText(text, 0, 64);
+        ctx.strokeText(text, 0, 64);
 
         var texture = new THREE.Texture(canvas);
-        texture.needsUpdate = true;
         var material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
         material.map.needsUpdate = true;
 
-        var geom = new THREE.PlaneGeometry(1, 1);
-        var mesh = new THREE.Mesh(geom, material);
-        mesh.scale.set(4, 4, 4);
-        //mesh.scale.set(canvas.width / canvas.height, 1, 1);
-        //mesh.updateMatrix();
-        return mesh;
+        var sprite = new THREE.Sprite(material);
+        return sprite;
     };
 
 } )();

@@ -52,7 +52,8 @@ function init() {
         // high res, video can autostart on desktop
         //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
         //video.src = '/static/BernieStereoHighResBronx.mp4';
-        video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
+        //video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
+        video.src = '/static/video/bernie.webm';
     }
 
     var texture = new THREE.VideoTexture( video );
@@ -82,7 +83,7 @@ function init() {
 
     ( function () {
         // create video sphere for left eye
-        var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
+        var geometry = new THREE.SphereGeometry( 900, 60 / 2, 40 / 2);
         geometry.scale( -1, 1, 1 );
         var uvs = geometry.faceVertexUvs[ 0 ];
         for ( var i = 0; i < uvs.length; i ++ ) {
@@ -104,7 +105,7 @@ function init() {
 
     ( function () {
         // create video sphere for right eye
-        var geometry = new THREE.SphereGeometry( 500, 60 / 2, 40 / 2);
+        var geometry = new THREE.SphereGeometry( 900, 60 / 2, 40 / 2);
         geometry.scale( -1, 1, 1 );
         var uvs = geometry.faceVertexUvs[ 0 ];
         for ( var i = 0; i < uvs.length; i ++ ) {
@@ -153,24 +154,30 @@ function init() {
         depth: 0.2,
         yMin: 0,
         titleImage: '/static/img/inequality_title.png',
-        xLabelImage: '/static/img/inequality_xlabels.png',
-        yLabelImage: '/static/img/inequality_ylabels.png',
+        // xLabelImage: '/static/img/inequality_xlabels.png',
+        // yLabelImage: '/static/img/inequality_ylabels.png',
+        xLabels: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010].map( (year) => '/static/img/income_inequality/' + year + '.png' ),
+        yLabels: ['0.png', '6.25.png', '12.5.png', '18.75.png', '25.png'].map( (filename) => '/static/img/income_inequality/' + filename ),
         areaMaterial: new THREE.MeshPhongMaterial({color: COLORS.chart_background, shininess: 60})
     }, function (chart) {
         chart.position.set(-2, 2.5, -4);
         chart.updateMatrix();
         scene.add(chart);
+        animate();
     });
 
-    animate();
+    var barChart = makeBarChart([0.2, 0.6, 1, 0.8, 0.4], {barWidth: 0.5, barDepth: 0.1});
+    barChart.rotation.z = -Math.PI / 2;
+    barChart.position.set(-4, 4, -3);
+    barChart.updateMatrix();
+    scene.add(barChart);
+
 
     var isPlaying = false;
     function startVideo() {
         if (!isPlaying) {
             isPlaying = true;
             video.play();
-            addBoxChart(scene, 10000);
-            addPieChart(scene, 20000);
         }
     }
 

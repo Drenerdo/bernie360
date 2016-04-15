@@ -1,103 +1,34 @@
-function addBoxChart(scene, fadeInTime, fadeOutTime) {
+var makeBarChart = ( function () {
     "use strict";
-    // bar / box graph
-    var colors = [0xff0000, 0xff2200, 0xff4400, 0xff6600, 0xff8800];
-    var boxMeshes = [];
-    var boxGeom = new THREE.BoxBufferGeometry(0.75, 1, 0.75);
-    var parent = new THREE.Object3D();
-    for (var i = 0; i < colors.length; i++) {
-        var boxMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
-        var boxMesh = new THREE.Mesh(boxGeom, boxMaterial);
-        boxMesh.scale.set(1, 1 + i, 1);
-        boxMesh.position.set(-2 + i, 0.75 + 0.5*boxMesh.scale.y, 0);
-        boxMesh.updateMatrix();
-        parent.add(boxMesh);
-        boxMeshes.push(boxMesh);
-    }
-    parent.rotation.z = -Math.PI / 2;
-    parent.position.set(-7, 4, -4);
-    parent.scale.set(0.65, 0.65, 0.65);
-    parent.updateMatrix();
-    scene.add(parent);
-    function fadeIn() {
-        var fadeInInterval;
-        fadeInInterval = setInterval( function () {
-            for (var i = 0; i < boxMeshes.length; i++) {
-                var boxMaterial = boxMeshes[i].material;
-                boxMaterial.opacity += 0.01 - 0.0001*i;
-                boxMaterial.opacity = Math.min(1, boxMaterial.opacity);
-            }
-            if (boxMaterial.opacity === 1) {
-                clearInterval(fadeInInterval);
-                setTimeout(fadeOut, 10000);
-            }
-        }, 30);
-    }
 
-    setTimeout(fadeIn, fadeInTime);
+    const DEFAULT_OPTIONS = {
+        barWidth: 0.75,
+        barDepth: 0.25,
+        barMaterial: new THREE.MeshBasicMaterial({color: 0xffff00}),
+        barSeparation: 0.1
+    };
 
-    function fadeOut() {
-        var fadeOutInterval;
-        fadeOutInterval = setInterval( function () {
-            for (var i = 0; i < boxMeshes.length; i++) {
-                var boxMaterial = boxMeshes[i].material;
-                boxMaterial.opacity -= (0.01 - 0.0001*i);
-                boxMaterial.opacity = Math.max(0, boxMaterial.opacity);
-            }
-            if (boxMaterial.opacity === 1) {
-                clearInterval(fadeOutInterval);
-            }
-        }, 30);
-    }
+    var boxGeom = new THREE.BoxBufferGeometry(1, 1, 1);
 
-}
+    return function (heights, options, onLoad) {
+        options = options || {};
+        for (var kwarg in DEFAULT_OPTIONS) {
+            if (options[kwarg] === undefined) options[kwarg] = DEFAULT_OPTIONS[kwarg];
+        }
+        var chart = new THREE.Object3D();
+        for (var i = 0; i < heights.length; i++) {
+            var height = heights[i];
+            var barMesh = new THREE.Mesh(boxGeom, options.barMaterial);
+            barMesh.scale.set(options.barWidth, height, options.barDepth);
+            barMesh.position.x = (i + 0.5) * barMesh.scale.x + i * options.barSeparation;
+            barMesh.position.y = 0.5 * barMesh.scale.y;
+            barMesh.updateMatrix();
+            chart.add(barMesh);
+        }
+        return chart;
+    };
 
-
-function addPieChart(scene, fadeInTime, fadeOutTime) {
-    "use strict";
-    var colors = [0x33bb33, 0xbb3333, 0x3333bb, 0x33bbbb];
-    var thetaLengths = [2*Math.PI / 2, 2*Math.PI / 4, 2*Math.PI / 7];
-    thetaLengths.push(2*Math.PI - thetaLengths.reduce( (p, c) => p + c));
-
-    var sliceMeshes = [];
-
-    for (var i = 0; i < colors.length; i++) {
-        var sliceGeom = new THREE.CylinderBufferGeometry(
-            0.75, // radius top
-            0.75, // radius bottom
-            0.15, // height
-            10, // radius segments
-            1, // height segments
-            false, // open-ended
-            thetaLengths.slice(0,i).reduce( (p, c) => p + c, 0 ), // start angle
-            thetaLengths[i] // angle swept
-        );
-        var sliceMaterial = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0});
-        var sliceMesh = new THREE.Mesh(sliceGeom, sliceMaterial);
-        sliceMesh.rotation.x = 1.2 * Math.PI / 2;
-        sliceMesh.scale.set(0.85, 0.85, 0.85);
-        sliceMesh.position.set(3.5, 1.5, -3);
-        sliceMesh.updateMatrix();
-        scene.add(sliceMesh);
-        sliceMeshes.push(sliceMesh);
-    }
-
-    function fadeIn() {
-        var fadeInInterval;
-        fadeInInterval = setInterval( function () {
-            for (var i = 0; i < sliceMeshes.length; i++) {
-                var sliceMaterial = sliceMeshes[i].material;
-                sliceMaterial.opacity += 0.01 - 0.001 * i;
-                sliceMaterial.opacity = Math.min(1, sliceMaterial.opacity);
-            }
-            if (sliceMeshes[sliceMeshes.length-1].material.opacity === 1) {
-                clearInterval(fadeInInterval);
-            }
-        }, 40);
-    }
-
-    setTimeout(fadeIn, fadeInTime);
-}
+} )();
 
 
 var makeLineAreaChart = ( function () {
@@ -108,10 +39,10 @@ var makeLineAreaChart = ( function () {
         height: 1,
         depth: 0,
         areaMaterial: new THREE.MeshBasicMaterial({color: 0xffff00}),
-        labelSize: 0.004,
+        labelSize: 0.005
     };
 
-    var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
+    var labelGeom = new THREE.PlaneBufferGeometry(1, 1);
 
     return function (xValues, yValues, options, onLoad) {
         options = options || {};
@@ -134,42 +65,57 @@ var makeLineAreaChart = ( function () {
         var geom;
         if (options.depth > 0) geom = shape.extrude({bevelEnabled: false, amount: options.depth});
         else geom = shape.makeGeometry();
-        geom.translate(-xValues[0], -options.yMin, 0);
+        geom.translate(-xValues[0], -options.yMin, -options.depth);
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geom);
         geom.dispose();
 
-        var mesh = new THREE.Mesh(bufferGeom, options.areaMaterial);
+        var areaMesh = new THREE.Mesh(bufferGeom, options.areaMaterial);
         bufferGeom.computeBoundingBox();
-        mesh.scale.set(
+        areaMesh.scale.set(
             options.width / (bufferGeom.boundingBox.max.x - bufferGeom.boundingBox.min.x),
             options.height / (bufferGeom.boundingBox.max.y - bufferGeom.boundingBox.min.y),
             1
         );
-        mesh.updateMatrix();
+        areaMesh.updateMatrix();
 
-        chart.add(mesh);
+        chart.add(areaMesh);
 
         var loadingManager = new THREE.LoadingManager(onTexturesLoad);
         var textureLoader = new THREE.TextureLoader(loadingManager);
 
         var titleTexture;
-        if (options.titleImage) titleTexture = textureLoader.load(options.titleImage);
         var xLabelTexture;
-        if (options.xLabelImage) xLabelTexture = textureLoader.load(options.xLabelImage);
         var yLabelTexture;
-        if (options.yLabelImage) yLabelTexture = textureLoader.load(options.yLabelImage);
+        var xLabelOffsets = [];
+        var xLabelTextures = [];
+        var yLabelOffsets = [];
+        var yLabelTextures = [];
+        if (options.titleImage) titleTexture = textureLoader.load(options.titleImage);
 
-        // if (options.xLabels) {
-        //     options.xLabels.forEach( function (url) {
-        //     } );
-        // }
+        if (options.xLabelImage) xLabelTexture = textureLoader.load(options.xLabelImage);
+        else if (options.xLabels) {
+            options.xLabels.forEach( function (url) {
+                xLabelTextures.push( textureLoader.load(url) );
+                xLabelOffsets.push( parseFloat(url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.png'))) );
+            } );
+        }
+
+        if (options.yLabelImage) yLabelTexture = textureLoader.load(options.yLabelImage);
+        else if (options.yLabels) {
+            options.yLabels.forEach( function (url) {
+                yLabelTextures.push( textureLoader.load(url) );
+                yLabelOffsets.push( parseFloat(url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.png'))) );
+            } );
+        }
 
         function onTexturesLoad() {
             var material, mesh;
             var labelSize = options.labelSize;
+
             [titleTexture, xLabelTexture, yLabelTexture].forEach( function (texture) {
+                if (!texture) return;
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
-                mesh = new THREE.Mesh(quadGeom, material);
+                mesh = new THREE.Mesh(labelGeom, material);
                 mesh.scale.x = labelSize * texture.image.width;
                 mesh.scale.y = labelSize * texture.image.height;
                 if (texture === titleTexture) {
@@ -186,12 +132,35 @@ var makeLineAreaChart = ( function () {
                 chart.add(mesh);
             } );
 
+            xLabelTextures.forEach( function (texture, i) {
+                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+                mesh = new THREE.Mesh(labelGeom, material);
+                mesh.scale.x = labelSize * texture.image.width;
+                mesh.scale.y = labelSize * texture.image.height;
+                mesh.position.x = areaMesh.scale.x * (xLabelOffsets[i] - xValues[0]);
+                mesh.position.y = -0.5 * mesh.scale.y;
+                mesh.updateMatrix();
+                chart.add(mesh);
+            } );
+
+            yLabelTextures.forEach( function (texture, i) {
+                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+                mesh = new THREE.Mesh(labelGeom, material);
+                mesh.scale.x = labelSize * texture.image.width;
+                mesh.scale.y = labelSize * texture.image.height;
+                mesh.position.x = -0.5 * mesh.scale.x;
+                mesh.position.y = areaMesh.scale.y * (yLabelOffsets[i] - options.yMin);
+                mesh.updateMatrix();
+                chart.add(mesh);
+            } );
+
             if (onLoad) onLoad(chart);
         }
 
         return chart;
     };
 } )();
+
 
 
 var makeTextLabel = ( function () {

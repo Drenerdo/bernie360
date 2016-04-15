@@ -1,3 +1,7 @@
+const COLORS = {
+    chart_background: 0x147fd7
+};
+
 function init() {
     "use strict";
     console.log('navigator.userAgent = %s', navigator.userAgent);
@@ -5,8 +9,8 @@ function init() {
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
     var renderer = new THREE.WebGLRenderer({
-        canvas: document.getElementById('webgl-canvas'),
-        antialias: !isMobile()
+        canvas: document.getElementById('webgl-canvas') /*,
+        antialias: !isMobile() */
     });
 
     renderer.setClearColor( 0x101010 );
@@ -43,12 +47,12 @@ function init() {
         // lower res for mobile
         //video.src = '/static/bernie_stereo_1080_web_optimized.mp4';
         //video.src = '/static/bernie_stereo_1024_web_optimized.mp4';
-        video.src = '/static/bernie_stereo_1080_web_optimized_b.mp4';
+        video.src = '/static/video/bernie_stereo_1080_web_optimized_b.mp4';
     } else {
         // high res, video can autostart on desktop
         //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
         //video.src = '/static/BernieStereoHighResBronx.mp4';
-        video.src = '/static/bernie_stereo_2160_web_optimized.mp4';
+        video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
     }
 
     var texture = new THREE.VideoTexture( video );
@@ -131,40 +135,36 @@ function init() {
     if (!isMobile()) {
         startVideo();
     } else {
-        var mesh = makeTextMesh('Touch to begin!');
-        mesh.position.set(0, 0, -2);
-        mesh.updateMatrix();
-        scene.add(mesh);
+        // var mesh = makeTextMesh('Touch to begin!');
+        // mesh.position.set(0, 0, -2);
+        // mesh.updateMatrix();
+        // scene.add(mesh);
+        // TODO: cardboard viewer selection
         document.body.addEventListener('click', function () {
             startVideo();
-            scene.remove(mesh);
+            //scene.remove(mesh);
         });
     }
 
-    var isPlaying = false;
 
     var lineAreaChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
-        yMin: 0,
         width: 4,
         height: 2,
         depth: 0.2,
+        yMin: 0,
         titleImage: '/static/img/inequality_title.png',
         xLabelImage: '/static/img/inequality_xlabels.png',
         yLabelImage: '/static/img/inequality_ylabels.png',
-        areaMaterial: new THREE.MeshPhongMaterial({color: 0x2222ff, shininess: 60})
+        areaMaterial: new THREE.MeshPhongMaterial({color: COLORS.chart_background, shininess: 60})
     }, function (chart) {
         chart.position.set(-2, 2.5, -4);
         chart.updateMatrix();
         scene.add(chart);
     });
 
-    var textLabel = makeTextLabel('asdf');
-    textLabel.position.set(0, 0, -2);
-    textLabel.updateMatrix();
-    scene.add(textLabel);
-
     animate();
 
+    var isPlaying = false;
     function startVideo() {
         if (!isPlaying) {
             isPlaying = true;
@@ -186,5 +186,13 @@ function init() {
         controls.update();
         effect.render( scene, camera );
     }
+
+    // uncomment to view mesh wireframes:
+    // var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
+    // scene.overrideMaterial = wireframeMaterial;
+
+    // uncomment to view mesh normals:
+    // var normalMaterial = new THREE.MeshNormalMaterial();
+    // scene.overrideMaterial = normalMaterial;
 
 }

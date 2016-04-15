@@ -107,7 +107,8 @@ var makeLineAreaChart = ( function () {
         width: 1,
         height: 1,
         depth: 0,
-        areaMaterial: new THREE.MeshBasicMaterial({color: 0x0000ff})
+        areaMaterial: new THREE.MeshBasicMaterial({color: 0xffff00}),
+        labelSize: 0.004,
     };
 
     var quadGeom = new THREE.PlaneBufferGeometry(1, 1);
@@ -117,7 +118,7 @@ var makeLineAreaChart = ( function () {
         for (var key in DEFAULT_OPTIONS) {
             if (options[key] === undefined) options[key] = DEFAULT_OPTIONS[key];
         }
-        options.yMin = options.yMin || Math.min.apply(null, yValues);
+        options.yMin = options.yMin !== undefined ? options.yMin : Math.min.apply(null, yValues);
 
         var chart = new THREE.Object3D();
 
@@ -158,33 +159,33 @@ var makeLineAreaChart = ( function () {
         var yLabelTexture;
         if (options.yLabelImage) yLabelTexture = textureLoader.load(options.yLabelImage);
 
+        // if (options.xLabels) {
+        //     options.xLabels.forEach( function (url) {
+        //     } );
+        // }
+
         function onTexturesLoad() {
             var material, mesh;
-            var labelSize = options.labelSize || 0.004;
-            if (titleTexture) {
-                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: titleTexture, transparent: true});
+            var labelSize = options.labelSize;
+            [titleTexture, xLabelTexture, yLabelTexture].forEach( function (texture) {
+                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
                 mesh = new THREE.Mesh(quadGeom, material);
-                mesh.scale.set(labelSize*titleTexture.image.width, labelSize*titleTexture.image.height, 1);//.multiplyScalar(0.25);
-                mesh.position.set(0.5 * mesh.scale.x, 1.1 * options.height + 0.5 * mesh.scale.y, 0);
+                mesh.scale.x = labelSize * texture.image.width;
+                mesh.scale.y = labelSize * texture.image.height;
+                if (texture === titleTexture) {
+                    mesh.position.x = 0.5 * mesh.scale.x;
+                    mesh.position.y = 1.1 * options.height + 0.5 * mesh.scale.y;
+                } else if (texture === xLabelTexture) {
+                    mesh.position.x = 0.5 * mesh.scale.x;
+                    mesh.position.y = -0.5 * mesh.scale.y;
+                } else if (texture === yLabelTexture) {
+                    mesh.position.x = -mesh.scale.x;
+                    mesh.position.y = 0.5 * mesh.scale.y;
+                }
                 mesh.updateMatrix();
                 chart.add(mesh);
-            }
-            if (xLabelTexture) {
-                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: xLabelTexture, transparent: true});
-                mesh = new THREE.Mesh(quadGeom, material);
-                mesh.scale.set(labelSize*xLabelTexture.image.width, labelSize*xLabelTexture.image.height, 1);//.multiplyScalar(0.25);
-                mesh.position.set(0.5 * mesh.scale.x, -0.5 * mesh.scale.y, 0);
-                mesh.updateMatrix();
-                chart.add(mesh);
-            }
-            if (yLabelTexture) {
-                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: yLabelTexture, transparent: true});
-                mesh = new THREE.Mesh(quadGeom, material);
-                mesh.scale.set(labelSize*yLabelTexture.image.width, labelSize*yLabelTexture.image.height, 1);//.multiplyScalar(0.25);
-                mesh.position.set(-mesh.scale.x, 0.5 * mesh.scale.y, 0);
-                mesh.updateMatrix();
-                chart.add(mesh);
-            }
+            } );
+
             if (onLoad) onLoad(chart);
         }
 

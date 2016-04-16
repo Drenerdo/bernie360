@@ -68,15 +68,13 @@ function init() {
         // lower res for mobile
         //video.src = '/static/bernie_stereo_1080_web_optimized.mp4';
         //video.src = '/static/bernie_stereo_1024_web_optimized.mp4';
-        video.src = '/static/video/bernie_stereo_1080_web_optimized_b.mp4';
+        //video.src = '/static/video/bernie_stereo_1080_web_optimized_b.mp4';
+        video.src = '/static/video/wsp_pt1_stereo_1080_web_optimized.mp4';
+        //video.src = '/static/video/wsp_pt2_stereo_1080_web_optimized.mp4';
     } else {
         // high res, video can autostart on desktop
-        //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
-        //video.src = '/static/BernieStereoHighResBronx.mp4';
         //video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
         video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
-        //video.src = '/static/video/bernie_stereo_1080_web_optimized_b.mp4';
-        //video.src = '/static/video/wsp_stereo_2160.mp4';
     }
     var texture = new THREE.VideoTexture( video );
     texture.minFilter = THREE.NearestFilter;

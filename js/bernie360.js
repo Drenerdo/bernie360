@@ -6,7 +6,6 @@ const COLORS = {
 var BERNIE360 = {
     loadingManager: new THREE.LoadingManager(),
     fonts: {},
-    animateLoadingCallbacks: [],
     animateCallbacks: []
 };
 
@@ -42,7 +41,6 @@ function init() {
     }
 
     var scene = new THREE.Scene();
-    var loadingScene = new THREE.Scene();
 
     // TODO: potential optimization to try later:
     // scene.autoUpdate = false;
@@ -76,8 +74,9 @@ function init() {
         //video.src = 'http://ec2-52-87-181-40.compute-1.amazonaws.com/videos/BernieStereoHighResBronx.mp4';
         //video.src = '/static/BernieStereoHighResBronx.mp4';
         //video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
-        //video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
-        video.src = '/static/video/wsp_stereo_2160.mp4';
+        video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
+        //video.src = '/static/video/bernie_stereo_1080_web_optimized_b.mp4';
+        //video.src = '/static/video/wsp_stereo_2160.mp4';
     }
     var texture = new THREE.VideoTexture( video );
     texture.minFilter = THREE.NearestFilter;
@@ -110,7 +109,6 @@ function init() {
         leftVideoSphere.rotation.y = -Math.PI / 2;
         leftVideoSphere.updateMatrix();
         leftVideoSphere.layers.set( 1 ); // display in left eye only
-        // leftVideoSphere.visible = false;
         scene.add( leftVideoSphere );
     } )();
     var rightVideoSphere;
@@ -133,14 +131,11 @@ function init() {
         rightVideoSphere.rotation.y = -Math.PI / 2;
         rightVideoSphere.updateMatrix();
         rightVideoSphere.layers.set( 2 ); // display in right eye only
-        // rightVideoSphere.visible = false;
         scene.add( rightVideoSphere );
     } )();
 
     var isPlaying = false;
     function startVideo() {
-        // leftVideoSphere.visible = true;
-        // rightVideoSphere.visible = true;
         if (!isPlaying) {
             isPlaying = true;
             video.play();
@@ -151,31 +146,17 @@ function init() {
     // set callback for when everything is loaded / async requests have completed:
     // ********************************************************************************************
 
-    //var animateLoadingRequestID;
-
-    const tCountdown = 5000; // set for a 5 second countdown after everything is loaded
-    var tStart;
     BERNIE360.loadingManager.onLoad = function () {
-        // // stop animating the loading scene and start animating the real scene:
-        // cancelAnimationFrame(animateLoadingRequestID);
-        // requestAnimationFrame(animate);
-        tStart = lt + tCountdown;
         if (!isMobile()) {
-            setTimeout(startVideo, tCountdown);
+            startVideo();
         } else {
             // TODO: cardboard viewer selection
             // TODO: video cannot autoplay on Android, there has to be some prompt to touch the screen
             //       or similar action to start playing the video
-            // var mesh = makeTextMesh('Touch to begin!');
-            // mesh.position.set(0, 0, -2);
-            // mesh.updateMatrix();
-            // scene.add(mesh);
             document.body.addEventListener('click', function () {
                 startVideo();
-                //scene.remove(mesh);
             });
         }
-
     };
 
     BERNIE360.loadingManager.onProgress = function (url, nLoaded, nTotal) {
@@ -208,11 +189,6 @@ function init() {
         var mesh = new THREE.Mesh(textGeom, material);
         mesh.position.set(0, 1, -3);
         mesh.updateMatrix();
-        loadingScene.add(mesh);
-        BERNIE360.animateLoadingCallbacks.push( function (t, dt) {
-            mesh.rotation.y += 2 * dt;
-            mesh.updateMatrix();
-        } );
 
         // add example bar chart:
         var barChart = makeBarChart([0.2, 0.6, 1, 0.8, 0.4], {
@@ -258,38 +234,14 @@ function init() {
             BERNIE360.fonts[fontName] = font;
         });
     } );
-    ['droid_sans_bold', 'droid_sans_mono_regular', 'droid_serif_bold'].forEach( function (fontName) {
-        fontLoader.load('/static/node_modules/three/examples/fonts/droid/' + fontName + '.typeface.js', function (font) {
-            BERNIE360.fonts[fontName] = font;
-        });
-    } );
 
     // ********************************************************************************************
-    // start rendering the loading scene:
+    // start rendering:
     // ********************************************************************************************
 
-    //animateLoadingRequestID = requestAnimationFrame( animateLoading );
-    requestAnimationFrame( animateLoading );
+    requestAnimationFrame( animate );
 
     var lt = 0;
-    function animateLoading(t) {
-        var dt = (t - lt) * 0.001;
-        for (var i = 0, l = BERNIE360.animateLoadingCallbacks.length; i < l; i++) {
-            BERNIE360.animateLoadingCallbacks[i](t, dt);
-        }
-        vrControls.update();
-        vrEffect.render( loadingScene, camera );
-        if (tStart && t >= tStart) {
-            // start animating the real scene:
-            video.currentTime = 0;
-            requestAnimationFrame(animate);
-        } else {
-            //animateLoadingRequestID = requestAnimationFrame( animateLoading );
-            requestAnimationFrame( animateLoading );
-        }
-        lt = t;
-    }
-
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame( animate );

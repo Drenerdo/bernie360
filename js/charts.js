@@ -4,7 +4,7 @@ var makeBarChart = ( function () {
     const DEFAULT_OPTIONS = {
         barWidth: 0.25,
         barDepth: 0.25,
-        barMaterial: new THREE.MeshBasicMaterial({color: 0xffff00}),
+        barMaterial: new THREE.MeshBasicMaterial({color: 0xffff00, transparent: true}),
         barSeparation: 0.05
     };
 
@@ -25,7 +25,7 @@ var makeBarChart = ( function () {
             barMesh.updateMatrix();
             chart.add(barMesh);
         }
-        return chart;
+        return {chart: chart, animateFadeIn: animateFadeIn, animateFadeOut: animateFadeOut};
     };
 
 } )();
@@ -167,6 +167,37 @@ var makeLineAreaChart = ( function () {
             if (onLoad) onLoad(chart, materials);
         }
 
-        return {chart: chart, materials: materials};
+        function animateFadeIn(t, dt) {
+            for (var i = 0; i < materials.length; i++) {
+                var material = materials[i];
+                material.opacity += dt;
+                material.opacity = Math.min(1, material.opacity);
+            }
+            if (material.opacity === 1) {
+                BERNIE360.animateEvent = null;
+                BERNIE360.nextEventTime = BERNIE360.video.currentTime + 10;
+                BERNIE360.startNextEvent = function (t) {
+                    BERNIE360.animateEvent = animateFadeOut;
+                };
+            }
+        }
+
+        function animateFadeOut(t, dt) {
+            for (var i = 0; i < materials.length; i++) {
+                var material = materials[i];
+                material.opacity -= dt;
+            }
+            if (material.opacity <= 0) {
+                BERNIE360.scene.remove(chart);
+                BERNIE360.animateEvent = null;
+            }
+        }
+
+        function startEvent(t) {
+            chart.visible = true;
+            BERNIE360.animateEvent = animateFadeIn;
+        }
+
+        return {chart: chart, materials: materials, animateFadeIn: animateFadeIn, animateFadeOut: animateFadeOut, startEvent: startEvent};
     };
 } )();

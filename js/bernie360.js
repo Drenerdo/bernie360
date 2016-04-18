@@ -1,7 +1,10 @@
 var BERNIE360 = {
-    loadingManager: new THREE.LoadingManager(),
     fonts: {},
-    animateCallbacks: []
+    animateEvent: null,
+    startNextEvent: null,
+    nextEventTime: null,
+    video: document.createElement('video'),
+    scene: new THREE.Scene()
 };
 
 
@@ -40,7 +43,7 @@ function init() {
         vrEffect.setSize( window.innerWidth, window.innerHeight );
     }
 
-    var scene = new THREE.Scene();
+    var scene = BERNIE360.scene;
 
     // TODO: potential optimization to try later:
     // scene.autoUpdate = false;
@@ -62,40 +65,30 @@ function init() {
     // stereo 360 video setup:
     // ********************************************************************************************
 
-    var video = document.createElement( 'video' );
+    var video = BERNIE360.video;
     if (isMobile()) {
         // lower res for mobile
-        video.src = '/static/video/wsp_pt1_stereo_1080_web_optimized.mp4';
+        video.src = '/static/video/wsp_pt1_stereo_1024_web_optimized.mp4';
     } else {
         // high res, video can autostart on desktop
         //video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
         //video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
-        video.src = '/static/video/wsp_pt1_stereo_2160.mp4';
+        video.src = '/static/video/wsp_2160_1.mp4';
     }
+    video.autoplay = false;
 
-    // media events: 'canplay', 'canplaythrough', 'ended'
-    video.addEventListener('canplaythrough', function () {
-        console.log('canplaythrough event');
-        if (isMobile()) {
-            // TODO: video cannot autoplay on Android, there has to be some prompt to touch the screen
-            //       or similar action to start playing the video
-            console.log('touch screen to begin');
-            document.body.addEventListener('click', function () {
-                video.play();
-            });
-        } else {
-            video.play();
-        }
-    });
     video.addEventListener('stalled', function () {
         console.warn('stalled fetching media data');
     });
+    video.addEventListener('ended', function () {
+        console.log('video ended');
+    });
 
     var texture = new THREE.VideoTexture( video );
-    // texture.minFilter = THREE.NearestFilter;
-    // texture.maxFilter = THREE.NearestFilter;
-    texture.minFilter = THREE.LinearFilter;
-    texture.maxFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.NearestFilter;
+    texture.maxFilter = THREE.NearestFilter;
+    //texture.minFilter = THREE.LinearFilter;
+    //texture.maxFilter = THREE.LinearFilter;
     texture.format = THREE.RGBFormat;
     texture.generateMipmaps = false;
 
@@ -158,52 +151,63 @@ function init() {
     directionalLight.updateMatrix();
     scene.add(directionalLight);
 
-    var lineAreaChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
-        width: 4,
-        height: 2,
-        depth: 0.2,
-        yMin: 0,
-        titleImage: '/static/img/income_inequality/inequality_title.png',
-        xLabels: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010].map( (year) => '/static/img/income_inequality/' + year + '.png' ),
-        yLabels: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
-        areaMaterial: new THREE.MeshLambertMaterial({color: 0x147fd7, transparent: true})
-    }, function (chart, materials) {
-        chart.position.set(-4, 2.5, -3);
-        chart.updateMatrix();
-        chart.visible = false;
-        scene.add(chart);
-        materials.forEach( function (material) {
-            material.opacity = 0;
-        } );        
-    });
+    var fontLoader = new THREE.FontLoader();
+    fontLoader.load('/static/node_modules/three/examples/fonts/optimer_bold.typeface.js', function (font) {
 
-    var chart = lineAreaChart.chart;
-    var chartMaterials = lineAreaChart.materials;
-
-    var animateEvent;
-    var nextEventTime = 10;
-    var startNextEvent = function (t) {
-        chart.visible = true;
-        animateEvent = function (t, dt) {
-            for (var i = 0; i < chartMaterials.length; i++) {
-                var material = chartMaterials[i];
-                material.opacity += dt;
-                material.opacity = Math.min(1, material.opacity);
+        video.addEventListener('canplaythrough', function () {
+            console.log('canplaythrough event');
+            if (isMobile()) {
+                // TODO: video cannot autoplay on Android, there has to be some prompt to touch the screen
+                //       or similar action to start playing the video
+                console.log('touch screen to begin');
+                document.body.addEventListener('click', function () {
+                    video.play();
+                    //vrEffect.setFullScreen(true);
+                });
+            } else {
+                video.play();
             }
-            if (material.opacity === 1) animateEvent = null;
-        };
-    };
+        });
+
+        var incomeInequalityChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
+            width: 4,
+            height: 2,
+            depth: 0.2,
+            yMin: 0,
+            titleImage: '/static/img/income_inequality/inequality_title.png',
+            xLabels: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010].map( (year) => '/static/img/income_inequality/' + year + '.png' ),
+            yLabels: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
+            areaMaterial: new THREE.MeshLambertMaterial({color: 0x147fd7, transparent: true})
+        }, function (chart, materials) {
+            chart.position.set(-4, 2.5, -3);
+            chart.updateMatrix();
+            chart.visible = false;
+            scene.add(chart);
+            materials.forEach( function (material) {
+                material.opacity = 0;
+            } );
+        });
+
+        // var taxRatesChart = makeBarChart(TAX_RATES.avgIncomeTaxRate, {
+        //     barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true})
+        // });
+
+        BERNIE360.nextEventTime = 10;
+        BERNIE360.startNextEvent = incomeInequalityChart.startEvent;
+
+        requestAnimationFrame( animate );
+
+    });
 
     var lt = 0;
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
-        if (nextEventTime && video.currentTime >= nextEventTime) {
-            console.log(video.currentTime);
-            startNextEvent(t);
-            nextEventTime = null;
+        if (BERNIE360.nextEventTime && video.currentTime >= BERNIE360.nextEventTime) {
+            BERNIE360.startNextEvent(t);
+            BERNIE360.nextEventTime = null;
         }
-        if (animateEvent) animateEvent(t, dt);
+        if (BERNIE360.animateEvent) BERNIE360.animateEvent(t, dt);
         vrControls.update();
         vrEffect.render(scene, camera);
         lt = t;
@@ -217,6 +221,5 @@ function init() {
     // var normalMaterial = new THREE.MeshNormalMaterial();
     // scene.overrideMaterial = normalMaterial;
 
-    requestAnimationFrame( animate );
 
 }

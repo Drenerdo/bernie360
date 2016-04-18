@@ -184,7 +184,7 @@ function init() {
             yLabels: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
             areaMaterial: new THREE.MeshLambertMaterial({color: 0x147fd7, transparent: true})
         }, function (chart, materials) {
-            chart.position.set(-4, 2.5, -3);
+            chart.position.set(-4.5, 2.25, -3.5);
             chart.updateMatrix();
             chart.visible = false;
             scene.add(chart);
@@ -195,14 +195,27 @@ function init() {
 
         var taxRatesChart = makeBarChart(TAX_RATES.avgIncomeTaxRate, {
             barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true})
+        }, function (chart, materials) {
+            chart.position.set(4.5, 2.25, -3.5);
+            chart.scale.set(1, 0.05, 1);
+            chart.updateMatrix();
+            chart.visible = false;
+            scene.add(chart);
+            materials.forEach( function (material) {
+                material.opacity = 0;
+            } );
         });
 
         // queue and set times for events:
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeIn);
         BERNIE360.eventTimes.push(5);
-
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeOut);
         BERNIE360.eventTimes.push(15);
+
+        BERNIE360.eventStarters.push(taxRatesChart.startFadeIn);
+        BERNIE360.eventTimes.push(20);
+        BERNIE360.eventStarters.push(taxRatesChart.startFadeOut);
+        BERNIE360.eventTimes.push(30);
 
         // start animation loop:
         nextEventTime = BERNIE360.eventTimes.shift();

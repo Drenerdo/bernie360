@@ -29,6 +29,10 @@ var makeBarChart = ( function () {
             chart.add(barMesh);
         }
 
+        if (onLoad) {
+            onLoad(chart, materials);
+        }
+
         function animateFadeIn(t, dt) {
             for (var i = 0; i < materials.length; i++) {
                 var material = materials[i];

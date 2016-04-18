@@ -26,13 +26,18 @@ function init() {
     });
     renderer.setClearColor( 0x101010 );
     renderer.setPixelRatio( window.devicePixelRatio );
+    //renderer.setPixelRatio( 0.5 );
     renderer.setSize( window.innerWidth, window.innerHeight );
+
     var vrEffect = new THREE.VREffect( renderer );
+
     var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 2000 );
     camera.matrixAutoUpdate = true;
     camera.layers.enable( 1 ); // render left view when no stereo available
+
     var vrControls = new THREE.VRControls( camera );
     vrEffect.setSize( window.innerWidth, window.innerHeight );
+
     window.addEventListener( 'resize', onWindowResize, false );
     function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -63,19 +68,35 @@ function init() {
     // ********************************************************************************************
 
     var video = document.createElement( 'video' );
-    // video.crossOrigin = "anonymous";
     if (isMobile()) {
         // lower res for mobile
-        //video.src = '/static/bernie_stereo_1080_web_optimized.mp4';
-        //video.src = '/static/bernie_stereo_1024_web_optimized.mp4';
-        //video.src = '/static/video/bernie_stereo_1080_web_optimized_b.mp4';
         video.src = '/static/video/wsp_pt1_stereo_1080_web_optimized.mp4';
         //video.src = '/static/video/wsp_pt2_stereo_1080_web_optimized.mp4';
     } else {
         // high res, video can autostart on desktop
         //video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
-        video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
+        //video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
+        video.src = '/static/video/wsp_pt1_stereo_2160.mp4';
     }
+
+    // media events: 'canplay', 'canplaythrough', 'ended'
+    video.addEventListener('canplaythrough', function () {
+        console.log('canplay event');
+        if (isMobile()) {
+            // TODO: video cannot autoplay on Android, there has to be some prompt to touch the screen
+            //       or similar action to start playing the video
+            console.log('touch screen to begin');
+            document.body.addEventListener('click', function () {
+                video.play();
+            });
+        } else {
+            video.play();
+        }
+    });
+    video.addEventListener('stalled', function () {
+        console.warn('stalled fetching media data');
+    });
+
     var texture = new THREE.VideoTexture( video );
     texture.minFilter = THREE.NearestFilter;
     texture.maxFilter = THREE.NearestFilter;
@@ -83,10 +104,11 @@ function init() {
     // texture.maxFilter = THREE.LinearFilter;
     texture.format = THREE.RGBFormat;
     texture.generateMipmaps = false;
+
     var videoNeedsFlip = false;
-    if (/android/i.test(navigator.userAgent) && navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
-        videoNeedsFlip = true;
-    }
+    // if (/android/i.test(navigator.userAgent) && navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
+    //     videoNeedsFlip = true;
+    // }
     var leftVideoSphere;
     ( function () {
         // create video sphere for left eye
@@ -132,35 +154,6 @@ function init() {
         scene.add( rightVideoSphere );
     } )();
 
-    var isPlaying = false;
-    function startVideo() {
-        if (!isPlaying) {
-            isPlaying = true;
-            video.play();
-        }
-    }
-
-    // ********************************************************************************************
-    // set callback for when everything is loaded / async requests have completed:
-    // ********************************************************************************************
-
-    BERNIE360.loadingManager.onLoad = function () {
-        if (!isMobile()) {
-            startVideo();
-        } else {
-            // TODO: cardboard viewer selection
-            // TODO: video cannot autoplay on Android, there has to be some prompt to touch the screen
-            //       or similar action to start playing the video
-            document.body.addEventListener('click', function () {
-                startVideo();
-            });
-        }
-    };
-
-    BERNIE360.loadingManager.onProgress = function (url, nLoaded, nTotal) {
-        // TODO: implement some loading progress indicator
-    };
-
     // ********************************************************************************************
     // setup charts / visualizations:
     // ********************************************************************************************
@@ -170,68 +163,6 @@ function init() {
     directionalLight.position.set(20, 30, 50);
     directionalLight.updateMatrix();
     scene.add(directionalLight);
-
-    var fontLoadingManager = new THREE.LoadingManager( function () {
-
-        // this callback is executed once all fonts are loaded
-
-        // text geometry example:
-        var textGeom = new THREE.TextGeometry("BERNIE 360!", {
-            font: BERNIE360.fonts.helvetiker_bold,
-            size: 0.3,
-            //curveSegments: 4,
-            height: 0.05
-        });
-        textGeom.center();
-        var material = new THREE.MeshPhongMaterial({color: 0x44ee44, shininess: 75});
-        var mesh = new THREE.Mesh(textGeom, material);
-        mesh.position.set(0, 1, -3);
-        mesh.updateMatrix();
-
-        // add example bar chart:
-        var barChart = makeBarChart([0.2, 0.6, 1, 0.8, 0.4], {
-            barWidth: 0.25,
-            barDepth: 0.25,
-            barSeparation: 0.05,
-            barMaterial: new THREE.MeshPhongMaterial({color: 0xff3333})
-        });
-        barChart.rotation.z = -Math.PI / 2;
-        barChart.position.set(-4, 4, -3);
-        barChart.updateMatrix();
-        scene.add(barChart);
-
-        // add example pie chart:
-        // TODO
-
-        // add example line area chart:
-        var lineAreaChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
-            width: 4,
-            height: 2,
-            depth: 0.2,
-            yMin: 0,
-            titleImage: '/static/img/inequality_title.png',
-            xLabels: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010].map( (year) => '/static/img/income_inequality/' + year + '.png' ),
-            yLabels: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
-            //areaMaterial: new THREE.MeshPhongMaterial({color: COLORS.chart_background, shininess: 60})
-            areaMaterial: new THREE.MeshLambertMaterial({color: COLORS.chart_background})
-        }, function (chart) {
-            chart.position.set(-2, 2.5, -4);
-            chart.updateMatrix();
-            scene.add(chart);
-
-            BERNIE360.loadingManager.onLoad();
-        });
-
-    } );
-
-    var fontLoader = new THREE.FontLoader(fontLoadingManager);
-
-    // load the fonts that are included with three.js:
-    ['gentilis_bold', 'helvetiker_bold', 'optimer_bold'].forEach( function (fontName) {
-        fontLoader.load('/static/node_modules/three/examples/fonts/' + fontName + '.typeface.js', function (font) {
-            BERNIE360.fonts[fontName] = font;
-        });
-    } );
 
     // ********************************************************************************************
     // start rendering:

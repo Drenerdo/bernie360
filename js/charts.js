@@ -15,7 +15,10 @@ var makeBarChart = ( function () {
         for (var kwarg in DEFAULT_OPTIONS) {
             if (options[kwarg] === undefined) options[kwarg] = DEFAULT_OPTIONS[kwarg];
         }
+
         var chart = new THREE.Object3D();
+        var materials = [options.barMaterial];
+
         for (var i = 0; i < heights.length; i++) {
             var height = heights[i];
             var barMesh = new THREE.Mesh(boxGeom, options.barMaterial);
@@ -25,7 +28,39 @@ var makeBarChart = ( function () {
             barMesh.updateMatrix();
             chart.add(barMesh);
         }
-        return {chart: chart, animateFadeIn: animateFadeIn, animateFadeOut: animateFadeOut};
+
+        function animateFadeIn(t, dt) {
+            for (var i = 0; i < materials.length; i++) {
+                var material = materials[i];
+                material.opacity = Math.min(1, material.opacity + dt);
+            }
+            if (material.opacity === 1) {
+                BERNIE360.animateEvent = null;
+            }
+        }
+
+        function animateFadeOut(t, dt) {
+            for (var i = 0; i < materials.length; i++) {
+                var material = materials[i];
+                material.opacity -= dt;
+            }
+            if (material.opacity <= 0) {
+                BERNIE360.scene.remove(chart);
+                // TODO: dispose all resources
+                BERNIE360.animateEvent = null;
+            }
+        }
+
+        function startFadeIn(t) {
+            chart.visible = true;
+            BERNIE360.animateEvent = animateFadeIn;
+        }
+
+        function startFadeOut(t) {
+            BERNIE360.animateEvent = animateFadeOut;
+        }
+
+        return {chart: chart, startFadeIn: startFadeIn, startFadeOut: startFadeOut};
     };
 
 } )();
@@ -170,15 +205,10 @@ var makeLineAreaChart = ( function () {
         function animateFadeIn(t, dt) {
             for (var i = 0; i < materials.length; i++) {
                 var material = materials[i];
-                material.opacity += dt;
-                material.opacity = Math.min(1, material.opacity);
+                material.opacity = Math.min(1, material.opacity += dt);
             }
             if (material.opacity === 1) {
                 BERNIE360.animateEvent = null;
-                BERNIE360.nextEventTime = BERNIE360.video.currentTime + 10;
-                BERNIE360.startNextEvent = function (t) {
-                    BERNIE360.animateEvent = animateFadeOut;
-                };
             }
         }
 
@@ -189,15 +219,20 @@ var makeLineAreaChart = ( function () {
             }
             if (material.opacity <= 0) {
                 BERNIE360.scene.remove(chart);
+                // TODO: dispose all resources
                 BERNIE360.animateEvent = null;
             }
         }
 
-        function startEvent(t) {
+        function startFadeIn(t) {
             chart.visible = true;
             BERNIE360.animateEvent = animateFadeIn;
         }
 
-        return {chart: chart, materials: materials, animateFadeIn: animateFadeIn, animateFadeOut: animateFadeOut, startEvent: startEvent};
+        function startFadeOut(t) {
+            BERNIE360.animateEvent = animateFadeOut;
+        }
+
+        return {chart: chart, startFadeIn: startFadeIn, startFadeOut: startFadeOut};
     };
 } )();

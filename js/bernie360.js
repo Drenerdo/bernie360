@@ -1,12 +1,11 @@
 var BERNIE360 = {
     fonts: {},
+    eventTimes: [],
+    eventStarters: [],
     animateEvent: null,
-    startNextEvent: null,
-    nextEventTime: null,
     video: document.createElement('video'),
     scene: new THREE.Scene()
 };
-
 
 function init() {
     "use strict";
@@ -73,7 +72,7 @@ function init() {
         // high res, video can autostart on desktop
         //video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
         //video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
-        video.src = '/static/video/wsp_2160_1.mp4';
+        video.src = '/static/video/wsp_pt1_stereo_2160.webm';
     }
     video.autoplay = false;
 
@@ -141,6 +140,27 @@ function init() {
         scene.add( rightVideoSphere );
     } )();
 
+    video.addEventListener('canplaythrough', onCanPlayThrough);
+    function onCanPlayThrough() {
+        console.log('canplaythrough event');
+        if (isMobile()) {
+            // TODO: video cannot autoplay on Android, there has to be some prompt to touch the screen
+            //       or similar action to start playing the video
+            function onClick() {
+                video.play();
+                //vrEffect.setFullScreen(true);
+            }
+            console.log('touch screen to begin');
+            document.body.addEventListener('click', onClick);
+            video.addEventListener('playing', function () {
+                console.log('video playing, removing click event handler');
+                document.body.removeEventListener('click', onClick);
+            });
+        } else {
+            video.play();
+        }
+    }
+
     // ********************************************************************************************
     // setup charts / visualizations:
     // ********************************************************************************************
@@ -153,21 +173,6 @@ function init() {
 
     var fontLoader = new THREE.FontLoader();
     fontLoader.load('/static/node_modules/three/examples/fonts/optimer_bold.typeface.js', function (font) {
-
-        video.addEventListener('canplaythrough', function () {
-            console.log('canplaythrough event');
-            if (isMobile()) {
-                // TODO: video cannot autoplay on Android, there has to be some prompt to touch the screen
-                //       or similar action to start playing the video
-                console.log('touch screen to begin');
-                document.body.addEventListener('click', function () {
-                    video.play();
-                    //vrEffect.setFullScreen(true);
-                });
-            } else {
-                video.play();
-            }
-        });
 
         var incomeInequalityChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
             width: 4,
@@ -188,28 +193,38 @@ function init() {
             } );
         });
 
-        // var taxRatesChart = makeBarChart(TAX_RATES.avgIncomeTaxRate, {
-        //     barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true})
-        // });
+        var taxRatesChart = makeBarChart(TAX_RATES.avgIncomeTaxRate, {
+            barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true})
+        });
 
-        BERNIE360.nextEventTime = 10;
-        BERNIE360.startNextEvent = incomeInequalityChart.startEvent;
+        // queue and set times for events:
+        BERNIE360.eventStarters.push(incomeInequalityChart.startFadeIn);
+        BERNIE360.eventTimes.push(5);
 
-        requestAnimationFrame( animate );
+        BERNIE360.eventStarters.push(incomeInequalityChart.startFadeOut);
+        BERNIE360.eventTimes.push(15);
 
+        // start animation loop:
+        nextEventTime = BERNIE360.eventTimes.shift();
+        requestAnimationFrame(animate);
     });
 
+    var nextEventTime;
     var lt = 0;
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
-        if (BERNIE360.nextEventTime && video.currentTime >= BERNIE360.nextEventTime) {
-            BERNIE360.startNextEvent(t);
-            BERNIE360.nextEventTime = null;
+
+        if (nextEventTime && video.currentTime >= nextEventTime) {
+            nextEventTime = BERNIE360.eventTimes.shift();
+            if (BERNIE360.eventStarters.length > 0) (BERNIE360.eventStarters.shift())(t);
         }
+
         if (BERNIE360.animateEvent) BERNIE360.animateEvent(t, dt);
+
         vrControls.update();
         vrEffect.render(scene, camera);
+
         lt = t;
     }
 
@@ -220,6 +235,5 @@ function init() {
     // uncomment to view mesh normals:
     // var normalMaterial = new THREE.MeshNormalMaterial();
     // scene.overrideMaterial = normalMaterial;
-
 
 }

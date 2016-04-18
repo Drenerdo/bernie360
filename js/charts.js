@@ -57,6 +57,7 @@ var makeLineAreaChart = ( function () {
         options.yMin = options.yMin !== undefined ? options.yMin : Math.min.apply(null, yValues);
 
         var chart = new THREE.Object3D();
+        var materials = [];
 
         var nx = xValues.length;
         var points = [];
@@ -84,6 +85,7 @@ var makeLineAreaChart = ( function () {
         areaMesh.updateMatrix();
 
         chart.add(areaMesh);
+        materials.push(areaMesh.material);
 
         var loadingManager = new THREE.LoadingManager(onTexturesLoad);
         var textureLoader = new THREE.TextureLoader(loadingManager);
@@ -120,6 +122,7 @@ var makeLineAreaChart = ( function () {
             [titleTexture, xLabelTexture, yLabelTexture].forEach( function (texture) {
                 if (!texture) return;
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+                materials.push(material);
                 mesh = new THREE.Mesh(labelGeom, material);
                 mesh.scale.x = labelSize * texture.image.width;
                 mesh.scale.y = labelSize * texture.image.height;
@@ -139,6 +142,7 @@ var makeLineAreaChart = ( function () {
 
             xLabelTextures.forEach( function (texture, i) {
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+                materials.push(material);
                 mesh = new THREE.Mesh(labelGeom, material);
                 mesh.scale.x = labelSize * texture.image.width;
                 mesh.scale.y = labelSize * texture.image.height;
@@ -150,6 +154,7 @@ var makeLineAreaChart = ( function () {
 
             yLabelTextures.forEach( function (texture, i) {
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+                materials.push(material);
                 mesh = new THREE.Mesh(labelGeom, material);
                 mesh.scale.x = labelSize * texture.image.width;
                 mesh.scale.y = labelSize * texture.image.height;
@@ -159,9 +164,9 @@ var makeLineAreaChart = ( function () {
                 chart.add(mesh);
             } );
 
-            if (onLoad) onLoad(chart);
+            if (onLoad) onLoad(chart, materials);
         }
 
-        return chart;
+        return {chart: chart, materials: materials};
     };
 } )();

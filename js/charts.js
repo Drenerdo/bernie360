@@ -9,7 +9,8 @@ var makeBarChart = ( function () {
         heightScale: 1,
         font: undefined,
         textMaterial: new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true}),
-        barLabels: undefined
+        barLabels: undefined,
+        title: undefined
     };
 
     var boxGeom = new THREE.BoxBufferGeometry(1, 1, 1);
@@ -31,6 +32,7 @@ var makeBarChart = ( function () {
             barMesh.position.y = 0.5 * barMesh.scale.y;
             barMesh.updateMatrix();
             chart.add(barMesh);
+
             if (options.font) {
                 var textGeomParams = {
                     font: options.font,
@@ -50,8 +52,7 @@ var makeBarChart = ( function () {
                 chart.add(textMesh);
 
                 if (options.barLabels) {
-                    var text = options.barLabels[i];
-                    textGeom = new THREE.TextGeometry(text, textGeomParams);
+                    textGeom = new THREE.TextGeometry(options.barLabels[i], textGeomParams);
                     textGeom.center();
                     textGeom.computeBoundingBox();
                     textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
@@ -63,6 +64,21 @@ var makeBarChart = ( function () {
                     chart.add(textMesh);
                 }
             }
+        }
+
+        if (options.font && options.title) {
+            textGeomParams.size = 0.1;
+            textGeom = new THREE.TextGeometry(options.title, textGeomParams);
+            textGeom.center();
+            textGeom.computeBoundingBox();
+            textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
+            textGeom.dispose();
+            var bb = (new THREE.Box3()).setFromObject(chart);
+            textMesh.position.x = bb.center().x;
+            textMesh.position.y = bb.max.y + 2 * textGeom.boundingBox.size().y * 0.5;
+            textMesh.position.z = 0.5 * barMesh.scale.z;
+            textMesh.updateMatrix();
+            chart.add(textMesh);
         }
 
         if (onLoad) {

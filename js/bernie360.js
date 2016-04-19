@@ -80,6 +80,7 @@ function init() {
         }
     }
     video.autoplay = false;
+    video.currentTime = 7*60;
 
     video.addEventListener('stalled', function () {
         console.warn('stalled fetching media data');
@@ -226,7 +227,7 @@ function init() {
 
         // queue and set times for events:
 
-        var times = [1, 5, 10, 15, 20, 25, 30, 35];
+        var times = [1, 5, 10, 15, 20, 7*60].map( (time) => 7*60 + time );
 
         BERNIE360.eventStarters.push(startVideoFadeIn);
         BERNIE360.eventTimes.push(times.shift());

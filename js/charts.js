@@ -44,11 +44,11 @@ var makeBarChart = ( function () {
                 textGeom.center();
                 textGeom.computeBoundingBox();
                 var textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
-                textGeom.dispose();
                 textMesh.position.x = barMesh.position.x;
                 textMesh.position.y = barMesh.scale.y + 1.2 * textGeomParams.size;
                 textMesh.position.z = 0.5 * barMesh.scale.z;
                 textMesh.updateMatrix();
+                textGeom.dispose();
                 chart.add(textMesh);
 
                 if (options.barLabels) {
@@ -130,13 +130,17 @@ var makeLineAreaChart = ( function () {
         width: 1,
         height: 1,
         depth: 0,
-        areaMaterial: new THREE.MeshBasicMaterial({color: 0xffff00}),
+        areaMaterial: new THREE.MeshBasicMaterial({color: 0xffff00, transparent: true}),
         titleImage: undefined,
         xLabelImage: undefined,
         yLabelImage: undefined,
         xLabelImages: undefined,
         yLabelImages: undefined,
-        labelSize: 0.005
+        labelSize: 0.005,
+        font: undefined,
+        textMaterial: new THREE.MeshBasicMaterial({color: 0xffff00, transparent: true}),
+        xLabelValues: undefined,
+        yLabelValues: undefined
     };
 
     var labelGeom = new THREE.PlaneBufferGeometry(1, 1);
@@ -178,6 +182,30 @@ var makeLineAreaChart = ( function () {
 
         chart.add(areaMesh);
         materials.push(areaMesh.material);
+
+        if (options.font) {
+            materials.push(options.textMaterial);
+            var textGeomParams = {
+                font: options.font,
+                height: 0.1 * 0.08,
+                size: 0.08,
+                curveSegments: 12
+            };
+            if (options.xLabelValues) {
+                options.xLabelValues.forEach( function (x, i) {
+                    var textGeom = new THREE.TextGeometry(String(x), textGeomParams);
+                    textGeom.center();
+                    textGeom.computeBoundingBox();
+                    var textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
+                    textMesh.position.x = areaMesh.scale.x * (x - xValues[0]);
+                    textMesh.position.y = -1.3 * textGeomParams.size;
+                    textMesh.position.z = 0.5 * options.depth;
+                    textMesh.updateMatrix();
+                    textGeom.dispose();
+                    chart.add(textMesh);
+                } );
+            }
+        }
 
         var loadingManager = new THREE.LoadingManager(onTexturesLoad);
         var textureLoader = new THREE.TextureLoader(loadingManager);

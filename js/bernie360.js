@@ -18,8 +18,8 @@ function init() {
     // ********************************************************************************************
 
     var renderer = new THREE.WebGLRenderer({
-        canvas: document.getElementById('webgl-canvas') /*,
-        antialias: !isMobile() */
+        canvas: document.getElementById('webgl-canvas'),
+        antialias: !isMobile()
     });
     renderer.setClearColor( 0x101010 );
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -165,12 +165,12 @@ function init() {
     // ********************************************************************************************
 
     // this light illuminates the 3D objects:
-    var directionalLight = new THREE.DirectionalLight(0xffffff);
+    var directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
     directionalLight.position.set(20, 30, 50);
     directionalLight.updateMatrix();
     scene.add(directionalLight);
 
-    var fontURL = URL_PARAMS.fontURL || '/static/node_modules/three/examples/fonts/helvetiker_regular.typeface.js';
+    var fontURL = URL_PARAMS.fontURL || '/static/node_modules/three/examples/fonts/optimer_regular.typeface.js';
     var fontLoader = new THREE.FontLoader();
     fontLoader.load(fontURL, function (font) {
 
@@ -199,9 +199,11 @@ function init() {
             font: font,
             barLabels: TAX_RATES.incomePercentile.map( (percentile) => String(percentile) + '%' ),
             title: 'Average income tax rates in 2012, by income percentile',
-            barWidth: 0.3
+            barWidth: 0.3,
+            barSeparation: 0.07,
+            textMaterial: new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true})
         }, function (chart, materials) {
-            chart.position.set(3.25, 2.25, -2);
+            chart.position.set(2.25, 1.75, -1.5);
             chart.rotation.y = -0.2 * Math.PI;
             chart.updateMatrix();
             chart.visible = false;
@@ -246,9 +248,10 @@ function init() {
         lt = t;
     }
 
-    // uncomment to view mesh wireframes:
-    // var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
-    // scene.overrideMaterial = wireframeMaterial;
+    if (URL_PARAMS.wireframe) {
+        var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
+        scene.overrideMaterial = wireframeMaterial;
+    }
 
     // uncomment to view mesh normals:
     // var normalMaterial = new THREE.MeshNormalMaterial();

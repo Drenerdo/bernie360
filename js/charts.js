@@ -36,7 +36,7 @@ var makeBarChart = ( function () {
             if (options.font) {
                 var textGeomParams = {
                     font: options.font,
-                    height: 0,
+                    height: 0.1 * 0.08,
                     size: 0.08,
                     curveSegments: 12
                 };
@@ -56,11 +56,11 @@ var makeBarChart = ( function () {
                     textGeom.center();
                     textGeom.computeBoundingBox();
                     textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
-                    textGeom.dispose();
                     textMesh.position.x = barMesh.position.x;
                     textMesh.position.y = -1.2 * textGeomParams.size;
                     textMesh.position.z = 0.5 * barMesh.scale.z;
                     textMesh.updateMatrix();
+                    textGeom.dispose();
                     chart.add(textMesh);
                 }
             }
@@ -68,16 +68,17 @@ var makeBarChart = ( function () {
 
         if (options.font && options.title) {
             textGeomParams.size = 0.1;
+            textGeomParams.height = 0.1 * 0.1;
             textGeom = new THREE.TextGeometry(options.title, textGeomParams);
             textGeom.center();
             textGeom.computeBoundingBox();
             textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
-            textGeom.dispose();
             var bb = (new THREE.Box3()).setFromObject(chart);
             textMesh.position.x = bb.center().x;
             textMesh.position.y = bb.max.y + 2 * textGeom.boundingBox.size().y * 0.5;
             textMesh.position.z = 0.5 * barMesh.scale.z;
             textMesh.updateMatrix();
+            textGeom.dispose();
             chart.add(textMesh);
         }
 
@@ -210,27 +211,6 @@ var makeLineAreaChart = ( function () {
             var material, mesh;
             var labelSize = options.labelSize;
 
-            [titleTexture, xLabelTexture, yLabelTexture].forEach( function (texture) {
-                if (!texture) return;
-                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
-                materials.push(material);
-                mesh = new THREE.Mesh(labelGeom, material);
-                mesh.scale.x = labelSize * texture.image.width;
-                mesh.scale.y = labelSize * texture.image.height;
-                if (texture === titleTexture) {
-                    mesh.position.x = 0.5 * mesh.scale.x;
-                    mesh.position.y = 1.1 * options.height + 0.5 * mesh.scale.y;
-                } else if (texture === xLabelTexture) {
-                    mesh.position.x = 0.5 * mesh.scale.x;
-                    mesh.position.y = -0.5 * mesh.scale.y;
-                } else if (texture === yLabelTexture) {
-                    mesh.position.x = -mesh.scale.x;
-                    mesh.position.y = 0.5 * mesh.scale.y;
-                }
-                mesh.updateMatrix();
-                chart.add(mesh);
-            } );
-
             xLabelTextures.forEach( function (texture, i) {
                 material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
                 materials.push(material);
@@ -251,6 +231,28 @@ var makeLineAreaChart = ( function () {
                 mesh.scale.y = labelSize * texture.image.height;
                 mesh.position.x = -0.5 * mesh.scale.x;
                 mesh.position.y = areaMesh.scale.y * (yLabelOffsets[i] - options.yMin);
+                mesh.updateMatrix();
+                chart.add(mesh);
+            } );
+
+            [titleTexture, xLabelTexture, yLabelTexture].forEach( function (texture) {
+                if (!texture) return;
+                material = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture, transparent: true});
+                materials.push(material);
+                mesh = new THREE.Mesh(labelGeom, material);
+                mesh.scale.x = labelSize * texture.image.width;
+                mesh.scale.y = labelSize * texture.image.height;
+                if (texture === titleTexture) {
+                    var bb = (new THREE.Box3()).setFromObject(chart);
+                    mesh.position.x = bb.center().x; //0.5 * mesh.scale.x;
+                    mesh.position.y = 1.2 * options.height + 0.5 * mesh.scale.y;
+                } else if (texture === xLabelTexture) {
+                    mesh.position.x = 0.5 * mesh.scale.x;
+                    mesh.position.y = -0.5 * mesh.scale.y;
+                } else if (texture === yLabelTexture) {
+                    mesh.position.x = -mesh.scale.x;
+                    mesh.position.y = 0.5 * mesh.scale.y;
+                }
                 mesh.updateMatrix();
                 chart.add(mesh);
             } );

@@ -25,3 +25,9 @@ var TAX_RATES = {
         17.60
     ]
 };
+
+var SHARE_OF_WEALTH = {
+    year: [],
+    topPercentage: [],
+    bottomPercentage: []
+};

@@ -21,7 +21,7 @@ function init() {
         canvas: document.getElementById('webgl-canvas'),
         antialias: !isMobile()
     });
-    renderer.setClearColor( 0x101010 );
+    renderer.setClearColor( 0x000000 );
     renderer.setPixelRatio( window.devicePixelRatio );
     //renderer.setPixelRatio( 0.5 );
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -45,7 +45,7 @@ function init() {
     var scene = BERNIE360.scene;
 
     // TODO: potential optimization to try later:
-    // scene.autoUpdate = false;
+    scene.autoUpdate = false;
 
     // ********************************************************************************************
     // setup interface for entering/exiting VR presentation:
@@ -100,6 +100,8 @@ function init() {
     // if (/android/i.test(navigator.userAgent) && navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
     //     videoNeedsFlip = true;
     // }
+    var videoMaterial = new THREE.MeshBasicMaterial( { map: texture, transparent: true, opacity: 0 } );
+    // var videoMaterial = new THREE.MeshBasicMaterial( { map: texture } );
     var videoRotation = -1.2 * Math.PI / 2;
     var leftVideoSphere;
     ( function () {
@@ -116,8 +118,9 @@ function init() {
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
         geometry.dispose();
-        var material = new THREE.MeshBasicMaterial( { map: texture } );
-        leftVideoSphere = new THREE.Mesh( bufferGeom, material );
+        // var material = new THREE.MeshBasicMaterial( { map: texture } );
+        // leftVideoSphere = new THREE.Mesh( bufferGeom, material );
+        leftVideoSphere = new THREE.Mesh( bufferGeom, videoMaterial );
         leftVideoSphere.rotation.y = videoRotation;
         leftVideoSphere.updateMatrix();
         leftVideoSphere.layers.set( 1 ); // display in left eye only
@@ -138,8 +141,9 @@ function init() {
         }
         var bufferGeom = (new THREE.BufferGeometry()).fromGeometry(geometry);
         geometry.dispose();
-        var material = new THREE.MeshBasicMaterial( { map: texture } );
-        rightVideoSphere = new THREE.Mesh( bufferGeom, material );
+        // var material = new THREE.MeshBasicMaterial( { map: texture } );
+        // rightVideoSphere = new THREE.Mesh( bufferGeom, material );
+        rightVideoSphere = new THREE.Mesh( bufferGeom, videoMaterial );
         rightVideoSphere.rotation.y = videoRotation;
         rightVideoSphere.updateMatrix();
         rightVideoSphere.layers.set( 2 ); // display in right eye only
@@ -221,20 +225,47 @@ function init() {
         });
 
         // queue and set times for events:
+
+        var times = [1, 5, 10, 15, 20, 25, 30, 35];
+
+        BERNIE360.eventStarters.push(startVideoFadeIn);
+        BERNIE360.eventTimes.push(times.shift());
+
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeIn);
-        BERNIE360.eventTimes.push(2);
+        BERNIE360.eventTimes.push(times.shift());
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeOut);
-        BERNIE360.eventTimes.push(6);
+        BERNIE360.eventTimes.push(times.shift());
 
         BERNIE360.eventStarters.push(taxRatesChart.startFadeIn);
-        BERNIE360.eventTimes.push(10);
+        BERNIE360.eventTimes.push(times.shift());
         BERNIE360.eventStarters.push(taxRatesChart.startFadeOut);
-        BERNIE360.eventTimes.push(14);
+        BERNIE360.eventTimes.push(times.shift());
+
+        BERNIE360.eventStarters.push(startVideoFadeOut);
+        BERNIE360.eventTimes.push(times.shift());
 
         // start animation loop:
+        scene.updateMatrixWorld();
         nextEventTime = BERNIE360.eventTimes.shift();
         requestAnimationFrame(animate);
     });
+
+    function startVideoFadeIn() {
+        BERNIE360.animateEvent = function (t, dt) {
+            videoMaterial.opacity = Math.min(1, videoMaterial.opacity + 0.5 * dt);
+            if (videoMaterial.opacity === 1) BERNIE360.animateEvent = null;
+        };
+    }
+
+    function startVideoFadeOut() {
+        BERNIE360.animateEvent = function (t, dt) {
+            videoMaterial.opacity -= 0.5 * dt;
+            if (videoMaterial.opacity <= 0) {
+                BERNIE360.animateEvent = null;
+                if (video.pause) video.pause();
+            }
+        };
+    }
 
     var nextEventTime;
     var lt = 0;
@@ -244,7 +275,10 @@ function init() {
 
         if (nextEventTime && video.currentTime >= nextEventTime) {
             nextEventTime = BERNIE360.eventTimes.shift();
-            if (BERNIE360.eventStarters.length > 0) (BERNIE360.eventStarters.shift())(t);
+            if (BERNIE360.eventStarters.length > 0) {
+                (BERNIE360.eventStarters.shift())(t);
+                scene.updateMatrixWorld();
+            }
         }
 
         if (BERNIE360.animateEvent) BERNIE360.animateEvent(t, dt);

@@ -227,14 +227,15 @@ function init() {
 
         var shareOfWealthChart = makeLineAreaChart(SHARE_OF_WEALTH.year, SHARE_OF_WEALTH.topPercentage, {
             width: 4,
-            height: 2,
+            height: 1.5,
             depth: 0.2,
             yMin: 0,
             areaMaterial: new THREE.MeshLambertMaterial({color: 0x72ff7d, transparent: true}),
             font: font,
             textMaterial: new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true}),
             xLabelValues: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010],
-            yLabelValues: [0, 10, 20, 30, 40]
+            yLabelValues: [0, 10, 20, 30],
+            title: 'Top 1% income share (including capital gains)'
         }, function (chart, materials) {
             chart.position.set(-4.5, 2.25, -3.5);
             chart.updateMatrix();

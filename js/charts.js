@@ -24,6 +24,7 @@ var makeText = ( function () {
         textGeom.computeBoundingBox();
         var textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
         textGeom.dispose();
+        textMesh.renderOrder = -2;
         return textMesh;
     };
 } )();

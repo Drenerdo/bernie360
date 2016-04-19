@@ -7,11 +7,17 @@ var BERNIE360 = {
     scene: new THREE.Scene()
 };
 
+const COLORS = {
+    blue: 0x147fd7
+};
+
+
 function init() {
     "use strict";
     console.log('navigator.userAgent = %s', navigator.userAgent);
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
+    const ORIGIN = new THREE.Vector3(0,0,0);
 
     // ********************************************************************************************
     // standard THREE.js WebGL/WebVR setup:
@@ -19,8 +25,10 @@ function init() {
 
     var renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('webgl-canvas'),
-        antialias: !isMobile()
+        antialias: !isMobile(),
+        depth: true
     });
+    renderer.sortObjects = false;
     renderer.setClearColor( 0x000000 );
     renderer.setPixelRatio( window.devicePixelRatio );
     //renderer.setPixelRatio( 0.5 );
@@ -125,6 +133,7 @@ function init() {
         leftVideoSphere.rotation.y = videoRotation;
         leftVideoSphere.updateMatrix();
         leftVideoSphere.layers.set( 1 ); // display in left eye only
+        leftVideoSphere.renderOrder = 0;
         scene.add( leftVideoSphere );
     } )();
     var rightVideoSphere;
@@ -148,6 +157,7 @@ function init() {
         rightVideoSphere.rotation.y = videoRotation;
         rightVideoSphere.updateMatrix();
         rightVideoSphere.layers.set( 2 ); // display in right eye only
+        rightVideoSphere.renderOrder = 0;
         scene.add( rightVideoSphere );
     } )();
 
@@ -186,6 +196,8 @@ function init() {
     var fontLoader = new THREE.FontLoader();
     fontLoader.load(fontURL, function (font) {
 
+        var bb = new THREE.Box3();
+
         var incomeInequalityChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
             width: 4,
             height: 2,
@@ -194,19 +206,27 @@ function init() {
             titleImage: '/static/img/income_inequality/inequality_title.png',
             xLabelImages: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010].map( (year) => '/static/img/income_inequality/' + year + '.png' ),
             yLabelImages: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
-            areaMaterial: new THREE.MeshLambertMaterial({color: 0x147fd7, transparent: true})
+            areaMaterial: new THREE.MeshLambertMaterial({color: COLORS.blue, transparent: true})
         }, function (chart, materials) {
-            chart.position.set(-4.5, 2, -3.5);
+            bb.setFromObject(chart);
+            chart.position.subVectors(chart.position, bb.center());
+            chart.position.x -= 4.75;
+            chart.position.y += 3;
+            chart.position.z -= 2;
+            // chart.position.set(-4.5, 2, -3.5);
+            // chart.updateMatrix();
+            chart.lookAt(ORIGIN);
             chart.updateMatrix();
             chart.visible = false;
             scene.add(chart);
+            scene.updateMatrixWorld();
             materials.forEach( function (material) {
                 material.opacity = 0;
             } );
         });
 
         var taxRatesChart = makeBarChart(TAX_RATES.avgIncomeTaxRate, {
-            barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true}),
+            barMaterial: new THREE.MeshLambertMaterial({color: COLORS.blue, transparent: true}),
             heightScale: 0.05,
             font: font,
             barLabels: TAX_RATES.incomePercentile.map( (percentile) => String(percentile) + '%' ),
@@ -215,11 +235,20 @@ function init() {
             barSeparation: 0.07,
             textMaterial: new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true})
         }, function (chart, materials) {
-            chart.position.set(2.25, 1.75, -1.5);
-            chart.rotation.y = -0.2 * Math.PI;
+            bb.setFromObject(chart);
+            chart.position.subVectors(chart.position, bb.center());
+            chart.position.x += 4.5;
+            chart.position.y += 2;
+            chart.position.z -= 2;
+            // chart.position.set(2.25, 1.75, -1.5);
+            // chart.updateMatrix();
+            //chart.rotation.y = -0.2 * Math.PI;
+            chart.lookAt(ORIGIN);
             chart.updateMatrix();
             chart.visible = false;
+            chart.renderOrder = 1;
             scene.add(chart);
+            scene.updateMatrixWorld();
             materials.forEach( function (material) {
                 material.opacity = 0;
             } );
@@ -230,17 +259,25 @@ function init() {
             height: 1.5,
             depth: 0.2,
             yMin: 0,
-            areaMaterial: new THREE.MeshLambertMaterial({color: 0x72ff7d, transparent: true}),
+            areaMaterial: new THREE.MeshLambertMaterial({color: COLORS.blue, transparent: true}),
             font: font,
             textMaterial: new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true}),
             xLabelValues: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010],
             yLabelValues: [0, 10, 20, 30],
             title: 'Top 1% income share (including capital gains)'
         }, function (chart, materials) {
-            chart.position.set(-4.5, 2.25, -3.5);
+            bb.setFromObject(chart);
+            chart.position.subVectors(chart.position, bb.center());
+            chart.position.x -= 2.5;
+            chart.position.y += 3;
+            chart.position.z -= 3;
+            // chart.position.set(-4.5, 2.25, -3.5);
+            // chart.updateMatrix();
+            chart.lookAt(ORIGIN);
             chart.updateMatrix();
             chart.visible = false;
             scene.add(chart);
+            scene.updateMatrixWorld();
             materials.forEach( function (material) {
                 material.opacity = 0;
             } );
@@ -250,7 +287,7 @@ function init() {
 
         var textMaterial = new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true, opacity: 0});
 
-        var textMesh = makeText('Rally for Bernie Sanders, Washington Square Park, 4/13/2016', {
+        var textMesh = makeText('Bernie Sanders speaks on income inequality at Washington Square Park on April 14, 2016', {
             font: font,
             textMaterial: textMaterial
         });
@@ -259,11 +296,11 @@ function init() {
         scene.add(textMesh);
 
         var times = [
-            1, 8, // fade-in/out opening caption
+            1, 5, // fade-in/out opening caption
             11, // fade-in video
-            20, 30, // chart 1
-            40, 50, // chart 2
-            60, 70, // chart 3
+            13, 15, // chart 1
+            17, 19, // chart 2
+            21, 23, // chart 3
             7*60 // fade-out
         ].map( (time) => time );
 
@@ -291,14 +328,14 @@ function init() {
         BERNIE360.eventTimes.push(times.shift());
 
 
-        BERNIE360.eventStarters.push(shareOfWealthChart.startFadeIn);
-        BERNIE360.eventTimes.push(times.shift());
-        BERNIE360.eventStarters.push(shareOfWealthChart.startFadeOut);
-        BERNIE360.eventTimes.push(times.shift());
-
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeIn);
         BERNIE360.eventTimes.push(times.shift());
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeOut);
+        BERNIE360.eventTimes.push(times.shift());
+
+        BERNIE360.eventStarters.push(shareOfWealthChart.startFadeIn);
+        BERNIE360.eventTimes.push(times.shift());
+        BERNIE360.eventStarters.push(shareOfWealthChart.startFadeOut);
         BERNIE360.eventTimes.push(times.shift());
 
         BERNIE360.eventStarters.push(taxRatesChart.startFadeIn);
@@ -355,10 +392,10 @@ function init() {
         lt = t;
     }
 
-    if (URL_PARAMS.wireframe) {
-        var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
-        scene.overrideMaterial = wireframeMaterial;
-    }
+    // if (URL_PARAMS.wireframe) {
+    //     var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
+    //     scene.overrideMaterial = wireframeMaterial;
+    // }
 
     // uncomment to view mesh normals:
     // var normalMaterial = new THREE.MeshNormalMaterial();

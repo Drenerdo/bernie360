@@ -70,8 +70,6 @@ function init() {
         video.src = '/static/video/wsp_pt1_stereo_1024_web_optimized.mp4';
     } else {
         // high res, video can autostart on desktop
-        //video.src = '/static/video/bernie_stereo_2160_web_optimized.mp4';
-        //video.src = '/static/video/bernie_stereo_2160.webm'; // encoded w/ VP8 instead of H.264, works in the WebVR Chrome builds!
         video.src = '/static/video/wsp_pt1_stereo_2160.webm';
     }
     video.autoplay = false;
@@ -95,6 +93,7 @@ function init() {
     // if (/android/i.test(navigator.userAgent) && navigator.userAgent.indexOf("Chrome/51.0") !== -1) {
     //     videoNeedsFlip = true;
     // }
+    var videoRotation = -1.2 * Math.PI / 2;
     var leftVideoSphere;
     ( function () {
         // create video sphere for left eye
@@ -112,7 +111,7 @@ function init() {
         geometry.dispose();
         var material = new THREE.MeshBasicMaterial( { map: texture } );
         leftVideoSphere = new THREE.Mesh( bufferGeom, material );
-        leftVideoSphere.rotation.y = -Math.PI / 2;
+        leftVideoSphere.rotation.y = videoRotation;
         leftVideoSphere.updateMatrix();
         leftVideoSphere.layers.set( 1 ); // display in left eye only
         scene.add( leftVideoSphere );
@@ -134,7 +133,7 @@ function init() {
         geometry.dispose();
         var material = new THREE.MeshBasicMaterial( { map: texture } );
         rightVideoSphere = new THREE.Mesh( bufferGeom, material );
-        rightVideoSphere.rotation.y = -Math.PI / 2;
+        rightVideoSphere.rotation.y = videoRotation;
         rightVideoSphere.updateMatrix();
         rightVideoSphere.layers.set( 2 ); // display in right eye only
         scene.add( rightVideoSphere );
@@ -172,7 +171,13 @@ function init() {
     scene.add(directionalLight);
 
     var fontLoader = new THREE.FontLoader();
-    fontLoader.load('/static/node_modules/three/examples/fonts/optimer_bold.typeface.js', function (font) {
+    fontLoader.load('/static/node_modules/three/examples/fonts/helvetiker_regular.typeface.js', function (font) {
+
+        // var textGeom = new THREE.TextGeometry('TEST', {font: font, size: 1, height: 0.1, curveSegments: 12});
+        // var textMesh = new THREE.Mesh(textGeom, new THREE.MeshBasicMaterial({color: 0xffff00}));
+        // textMesh.position.set(0, 1, -2);
+        // textMesh.updateMatrix();
+        // scene.add(textMesh);
 
         var incomeInequalityChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
             width: 4,
@@ -194,10 +199,12 @@ function init() {
         });
 
         var taxRatesChart = makeBarChart(TAX_RATES.avgIncomeTaxRate, {
-            barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true})
+            barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true}),
+            heightScale: 0.05,
+            font: font,
+            textSize: 0.12
         }, function (chart, materials) {
-            chart.position.set(4.5, 2.25, -3.5);
-            chart.scale.set(1, 0.05, 1);
+            chart.position.set(4.25, 2.25, -3.5);
             chart.updateMatrix();
             chart.visible = false;
             scene.add(chart);
@@ -208,14 +215,14 @@ function init() {
 
         // queue and set times for events:
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeIn);
-        BERNIE360.eventTimes.push(5);
+        BERNIE360.eventTimes.push(2);
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeOut);
-        BERNIE360.eventTimes.push(15);
+        BERNIE360.eventTimes.push(6);
 
         BERNIE360.eventStarters.push(taxRatesChart.startFadeIn);
-        BERNIE360.eventTimes.push(20);
+        BERNIE360.eventTimes.push(10);
         BERNIE360.eventStarters.push(taxRatesChart.startFadeOut);
-        BERNIE360.eventTimes.push(30);
+        BERNIE360.eventTimes.push(14);
 
         // start animation loop:
         nextEventTime = BERNIE360.eventTimes.shift();

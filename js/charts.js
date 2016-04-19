@@ -5,7 +5,11 @@ var makeBarChart = ( function () {
         barWidth: 0.25,
         barDepth: 0.25,
         barMaterial: new THREE.MeshBasicMaterial({color: 0xffff00, transparent: true}),
-        barSeparation: 0.05
+        barSeparation: 0.05,
+        heightScale: 1,
+        font: undefined,
+        textMaterial: new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true}),
+        textSize: 0.1
     };
 
     var boxGeom = new THREE.BoxBufferGeometry(1, 1, 1);
@@ -17,16 +21,30 @@ var makeBarChart = ( function () {
         }
 
         var chart = new THREE.Object3D();
-        var materials = [options.barMaterial];
+        var materials = [options.barMaterial, options.textMaterial];
 
         for (var i = 0; i < heights.length; i++) {
             var height = heights[i];
             var barMesh = new THREE.Mesh(boxGeom, options.barMaterial);
-            barMesh.scale.set(options.barWidth, height, options.barDepth);
+            barMesh.scale.set(options.barWidth, height * options.heightScale, options.barDepth);
             barMesh.position.x = (i + 0.5) * barMesh.scale.x + i * options.barSeparation;
             barMesh.position.y = 0.5 * barMesh.scale.y;
             barMesh.updateMatrix();
             chart.add(barMesh);
+            if (options.font) {
+                var textGeom = new THREE.TextGeometry(String(height), {
+                    font: options.font,
+                    height: 0,
+                    size: options.textSize,
+                    curveSegments: 12
+                });
+                textGeom.center();
+                var textMesh = new THREE.Mesh(textGeom, options.textMaterial);
+                textMesh.position.x = barMesh.position.x;
+                textMesh.position.y = barMesh.scale.y + 1.2 * options.textSize;
+                textMesh.updateMatrix();
+                chart.add(textMesh);
+            }
         }
 
         if (onLoad) {

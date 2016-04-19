@@ -71,6 +71,13 @@ function init() {
     } else {
         // high res, video can autostart on desktop
         video.src = '/static/video/wsp_pt1_stereo_2160.webm';
+        if (!video.canPlayType('video/webm')) {
+            video.src = '/static/video/wsp_pt1_stereo_2160.mp4';
+            if (!video.canPlayType('video/mp4')) {
+                // TODO: some error (none of the video formats are supported)
+                console.error('video format is unsupported');
+            }
+        }
     }
     video.autoplay = false;
 

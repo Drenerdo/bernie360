@@ -170,14 +170,9 @@ function init() {
     directionalLight.updateMatrix();
     scene.add(directionalLight);
 
+    var fontURL = URL_PARAMS.fontURL || '/static/node_modules/three/examples/fonts/helvetiker_regular.typeface.js';
     var fontLoader = new THREE.FontLoader();
-    fontLoader.load('/static/node_modules/three/examples/fonts/helvetiker_regular.typeface.js', function (font) {
-
-        // var textGeom = new THREE.TextGeometry('TEST', {font: font, size: 1, height: 0.1, curveSegments: 12});
-        // var textMesh = new THREE.Mesh(textGeom, new THREE.MeshBasicMaterial({color: 0xffff00}));
-        // textMesh.position.set(0, 1, -2);
-        // textMesh.updateMatrix();
-        // scene.add(textMesh);
+    fontLoader.load(fontURL, function (font) {
 
         var incomeInequalityChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
             width: 4,
@@ -202,9 +197,10 @@ function init() {
             barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true}),
             heightScale: 0.05,
             font: font,
-            textSize: 0.12
+            textSize: 0.09
         }, function (chart, materials) {
-            chart.position.set(4.25, 2.25, -3.5);
+            chart.position.set(4, 2.25, -3);
+            chart.rotation.y = -0.1 * Math.PI;
             chart.updateMatrix();
             chart.visible = false;
             scene.add(chart);

@@ -9,7 +9,8 @@ var makeBarChart = ( function () {
         heightScale: 1,
         font: undefined,
         textMaterial: new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true}),
-        textSize: 0.1
+        textSize: 0.1,
+        barLabels: undefined
     };
 
     var boxGeom = new THREE.BoxBufferGeometry(1, 1, 1);
@@ -42,6 +43,7 @@ var makeBarChart = ( function () {
                 var textMesh = new THREE.Mesh(textGeom, options.textMaterial);
                 textMesh.position.x = barMesh.position.x;
                 textMesh.position.y = barMesh.scale.y + 1.2 * options.textSize;
+                textMesh.position.z = 0.5 * barMesh.scale.z;
                 textMesh.updateMatrix();
                 chart.add(textMesh);
             }

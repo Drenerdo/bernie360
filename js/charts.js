@@ -134,8 +134,8 @@ var makeLineAreaChart = ( function () {
         titleImage: undefined,
         xLabelImage: undefined,
         yLabelImage: undefined,
-        xLabels: undefined,
-        yLabels: undefined,
+        xLabelImages: undefined,
+        yLabelImages: undefined,
         labelSize: 0.005
     };
 
@@ -192,19 +192,23 @@ var makeLineAreaChart = ( function () {
         if (options.titleImage) titleTexture = textureLoader.load(options.titleImage);
 
         if (options.xLabelImage) xLabelTexture = textureLoader.load(options.xLabelImage);
-        else if (options.xLabels) {
-            options.xLabels.forEach( function (url) {
+        else if (options.xLabelImages) {
+            options.xLabelImages.forEach( function (url) {
                 xLabelTextures.push( textureLoader.load(url) );
                 xLabelOffsets.push( parseFloat(url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.png'))) );
             } );
         }
 
         if (options.yLabelImage) yLabelTexture = textureLoader.load(options.yLabelImage);
-        else if (options.yLabels) {
-            options.yLabels.forEach( function (url) {
+        else if (options.yLabelImages) {
+            options.yLabelImages.forEach( function (url) {
                 yLabelTextures.push( textureLoader.load(url) );
                 yLabelOffsets.push( parseFloat(url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.png'))) );
             } );
+        }
+
+        if (!(options.titleImage || options.xLabelImage || options.xLabelImages || options.yLabelImage || options.yLabelImages)) {
+            onTexturesLoad();
         }
 
         function onTexturesLoad() {

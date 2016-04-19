@@ -192,8 +192,8 @@ function init() {
             depth: 0.2,
             yMin: 0,
             titleImage: '/static/img/income_inequality/inequality_title.png',
-            xLabels: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010].map( (year) => '/static/img/income_inequality/' + year + '.png' ),
-            yLabels: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
+            xLabelImages: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010].map( (year) => '/static/img/income_inequality/' + year + '.png' ),
+            yLabelImages: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
             areaMaterial: new THREE.MeshLambertMaterial({color: 0x147fd7, transparent: true})
         }, function (chart, materials) {
             chart.position.set(-4.5, 2.25, -3.5);
@@ -225,11 +225,43 @@ function init() {
             } );
         });
 
+        var shareOfWealthChart = makeLineAreaChart(SHARE_OF_WEALTH.year, SHARE_OF_WEALTH.topPercentage, {
+            width: 4,
+            height: 2,
+            depth: 0.2,
+            yMin: 0,
+            areaMaterial: new THREE.MeshLambertMaterial({color: 0x72ff7d, transparent: true}),
+            font: font,
+            textMaterial: new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true}),
+            xLabelValues: [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010],
+            yLabelValues: [0, 10, 20, 30, 40]
+        }, function (chart, materials) {
+            chart.position.set(-4.5, 2.25, -3.5);
+            chart.updateMatrix();
+            chart.visible = false;
+            scene.add(chart);
+            materials.forEach( function (material) {
+                material.opacity = 0;
+            } );
+        });
+
         // queue and set times for events:
 
-        var times = [1, 5, 10, 15, 20, 7*60].map( (time) => 7*60 + time );
+        var times = [
+            1, // fade-in
+            5, 10, // chart 1
+            15, 20, // chart 2
+            25, 30, // chart 3
+            7*60 // fade-out
+        ].map( (time) => 7*60 + time );
 
         BERNIE360.eventStarters.push(startVideoFadeIn);
+        BERNIE360.eventTimes.push(times.shift());
+
+
+        BERNIE360.eventStarters.push(shareOfWealthChart.startFadeIn);
+        BERNIE360.eventTimes.push(times.shift());
+        BERNIE360.eventStarters.push(shareOfWealthChart.startFadeOut);
         BERNIE360.eventTimes.push(times.shift());
 
         BERNIE360.eventStarters.push(incomeInequalityChart.startFadeIn);
@@ -241,6 +273,7 @@ function init() {
         BERNIE360.eventTimes.push(times.shift());
         BERNIE360.eventStarters.push(taxRatesChart.startFadeOut);
         BERNIE360.eventTimes.push(times.shift());
+
 
         BERNIE360.eventStarters.push(startVideoFadeOut);
         BERNIE360.eventTimes.push(times.shift());

@@ -1,3 +1,33 @@
+var makeText = ( function () {
+    "use strict";
+
+    const DEFAULT_OPTIONS = {
+        font: undefined,
+        textMaterial: new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true}),
+        curveSegments: 8
+    };
+
+    return function (text, options) {
+        options = options || {};
+        for (var kwarg in DEFAULT_OPTIONS) {
+            if (options[kwarg] === undefined) options[kwarg] = DEFAULT_OPTIONS[kwarg];
+        }
+
+        var textGeomParams = {
+            font: options.font,
+            height: 0.1 * 0.1,
+            size: 0.1,
+            curveSegments: options.curveSegments
+        };
+        var textGeom = new THREE.TextGeometry(text, textGeomParams);
+        textGeom.center();
+        textGeom.computeBoundingBox();
+        var textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
+        textGeom.dispose();
+        return textMesh;
+    };
+} )();
+
 var makeBarChart = ( function () {
     "use strict";
 

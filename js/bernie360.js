@@ -67,20 +67,20 @@ function init() {
     var video = BERNIE360.video;
     if (isMobile()) {
         // lower res for mobile
-        video.src = '/static/video/wsp_pt1_stereo_1024_web_optimized.mp4';
+        video.src = '/static/video/wsp_0650_1410_1024.mp4';
     } else {
         // high res, video can autostart on desktop
-        video.src = '/static/video/wsp_pt1_stereo_2160.webm';
-        if (!video.canPlayType('video/webm')) {
-            video.src = '/static/video/wsp_pt1_stereo_2160.mp4';
+        //video.src = '/static/video/wsp_pt1_stereo_2160.webm';
+        //if (!video.canPlayType('video/webm')) {
+            video.src = '/static/video/wsp_0650_1410_2160.mp4';
             if (!video.canPlayType('video/mp4')) {
                 // TODO: some error (none of the video formats are supported)
                 console.error('video format is unsupported');
             }
-        }
+        //}
     }
     video.autoplay = false;
-    video.currentTime = 7*60;
+    video.currentTime = 0; //7*60;
 
     video.addEventListener('stalled', function () {
         console.warn('stalled fetching media data');
@@ -103,7 +103,7 @@ function init() {
     // }
     var videoMaterial = new THREE.MeshBasicMaterial( { map: texture, transparent: true, opacity: 0 } );
     // var videoMaterial = new THREE.MeshBasicMaterial( { map: texture } );
-    var videoRotation = -1.2 * Math.PI / 2;
+    var videoRotation = -0.75 * Math.PI / 2;
     var leftVideoSphere;
     ( function () {
         // create video sphere for left eye
@@ -196,7 +196,7 @@ function init() {
             yLabelImages: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
             areaMaterial: new THREE.MeshLambertMaterial({color: 0x147fd7, transparent: true})
         }, function (chart, materials) {
-            chart.position.set(-4.5, 2.25, -3.5);
+            chart.position.set(-4.5, 2, -3.5);
             chart.updateMatrix();
             chart.visible = false;
             scene.add(chart);
@@ -248,13 +248,44 @@ function init() {
 
         // queue and set times for events:
 
+        var textMaterial = new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true, opacity: 0});
+
+        var textMesh = makeText('Rally for Bernie Sanders, Washington Square Park, 4/13/2016', {
+            font: font,
+            textMaterial: textMaterial
+        });
+        textMesh.position.z = -2;
+        textMesh.updateMatrix();
+        scene.add(textMesh);
+
         var times = [
-            1, // fade-in
-            5, 10, // chart 1
-            15, 20, // chart 2
-            25, 30, // chart 3
+            1, 8, // fade-in/out opening caption
+            11, // fade-in video
+            20, 30, // chart 1
+            40, 50, // chart 2
+            60, 70, // chart 3
             7*60 // fade-out
-        ].map( (time) => 7*60 + time );
+        ].map( (time) => time );
+
+        BERNIE360.eventStarters.push(function (t) {
+            BERNIE360.animateEvent = function (t, dt) {
+                textMesh.material.opacity = Math.min(1, textMesh.material.opacity + dt);
+                if (textMesh.material.opacity === 1) BERNIE360.animateEvent = null;
+            };
+        });
+        BERNIE360.eventTimes.push(times.shift());
+
+        BERNIE360.eventStarters.push(function (t) {
+            BERNIE360.animateEvent = function (t, dt) {
+                textMesh.material.opacity -= dt;
+                if (textMesh.material.opacity <= 0) {
+                    scene.remove(textMesh);
+                    BERNIE360.animateEvent = null;
+                }
+            };
+        });
+        BERNIE360.eventTimes.push(times.shift());
+
 
         BERNIE360.eventStarters.push(startVideoFadeIn);
         BERNIE360.eventTimes.push(times.shift());

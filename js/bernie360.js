@@ -197,10 +197,11 @@ function init() {
             barMaterial: new THREE.MeshLambertMaterial({color: 0xff0000, transparent: true}),
             heightScale: 0.05,
             font: font,
-            textSize: 0.09
+            barLabels: TAX_RATES.incomePercentile.map( (percentile) => String(percentile) ),
+            title: 'Average income tax rates in 2012, by income percentile'
         }, function (chart, materials) {
-            chart.position.set(4, 2.25, -3);
-            chart.rotation.y = -0.1 * Math.PI;
+            chart.position.set(3.25, 2.25, -2);
+            chart.rotation.y = -0.2 * Math.PI;
             chart.updateMatrix();
             chart.visible = false;
             scene.add(chart);

@@ -9,7 +9,6 @@ var makeBarChart = ( function () {
         heightScale: 1,
         font: undefined,
         textMaterial: new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true}),
-        textSize: 0.1,
         barLabels: undefined
     };
 
@@ -33,19 +32,36 @@ var makeBarChart = ( function () {
             barMesh.updateMatrix();
             chart.add(barMesh);
             if (options.font) {
-                var textGeom = new THREE.TextGeometry(String(height), {
+                var textGeomParams = {
                     font: options.font,
                     height: 0,
-                    size: options.textSize,
+                    size: 0.08,
                     curveSegments: 12
-                });
+                };
+                var textGeom = new THREE.TextGeometry(String(height), textGeomParams);
                 textGeom.center();
-                var textMesh = new THREE.Mesh(textGeom, options.textMaterial);
+                textGeom.computeBoundingBox();
+                var textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
+                textGeom.dispose();
                 textMesh.position.x = barMesh.position.x;
-                textMesh.position.y = barMesh.scale.y + 1.2 * options.textSize;
+                textMesh.position.y = barMesh.scale.y + 1.2 * textGeomParams.size;
                 textMesh.position.z = 0.5 * barMesh.scale.z;
                 textMesh.updateMatrix();
                 chart.add(textMesh);
+
+                if (options.barLabels) {
+                    var text = options.barLabels[i];
+                    textGeom = new THREE.TextGeometry(text, textGeomParams);
+                    textGeom.center();
+                    textGeom.computeBoundingBox();
+                    textMesh = new THREE.Mesh((new THREE.BufferGeometry()).fromGeometry(textGeom), options.textMaterial);
+                    textGeom.dispose();
+                    textMesh.position.x = barMesh.position.x;
+                    textMesh.position.y = -1.2 * textGeomParams.size;
+                    textMesh.position.z = 0.5 * barMesh.scale.z;
+                    textMesh.updateMatrix();
+                    chart.add(textMesh);
+                }
             }
         }
 

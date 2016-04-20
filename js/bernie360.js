@@ -196,8 +196,6 @@ function init() {
     var fontLoader = new THREE.FontLoader();
     fontLoader.load(fontURL, function (font) {
 
-        var bb = new THREE.Box3();
-
         var incomeInequalityChart = makeLineAreaChart(INCOME_INEQUALITY.x, INCOME_INEQUALITY.y, {
             width: 4,
             height: 2,
@@ -208,13 +206,9 @@ function init() {
             yLabelImages: ['0', '6.25', '12.5', '18.75', '25'].map( (filename) => '/static/img/income_inequality/' + filename + '.png' ),
             areaMaterial: new THREE.MeshLambertMaterial({color: COLORS.blue, transparent: true})
         }, function (chart, materials) {
-            bb.setFromObject(chart);
-            chart.position.subVectors(chart.position, bb.center());
             chart.position.x -= 4.75;
             chart.position.y += 3;
             chart.position.z -= 2;
-            // chart.position.set(-4.5, 2, -3.5);
-            // chart.updateMatrix();
             chart.lookAt(ORIGIN);
             chart.updateMatrix();
             chart.visible = false;
@@ -235,18 +229,12 @@ function init() {
             barSeparation: 0.07,
             textMaterial: new THREE.MeshLambertMaterial({color: 0xffffff, transparent: true})
         }, function (chart, materials) {
-            bb.setFromObject(chart);
-            chart.position.subVectors(chart.position, bb.center());
-            chart.position.x += 4.5;
+            chart.position.x += 1;
             chart.position.y += 2;
             chart.position.z -= 2;
-            // chart.position.set(2.25, 1.75, -1.5);
-            // chart.updateMatrix();
-            //chart.rotation.y = -0.2 * Math.PI;
             chart.lookAt(ORIGIN);
             chart.updateMatrix();
             chart.visible = false;
-            chart.renderOrder = 1;
             scene.add(chart);
             scene.updateMatrixWorld();
             materials.forEach( function (material) {
@@ -266,13 +254,9 @@ function init() {
             yLabelValues: [0, 10, 20, 30],
             title: 'Top 1% income share (including capital gains)'
         }, function (chart, materials) {
-            bb.setFromObject(chart);
-            chart.position.subVectors(chart.position, bb.center());
             chart.position.x -= 2.5;
             chart.position.y += 3;
             chart.position.z -= 3;
-            // chart.position.set(-4.5, 2.25, -3.5);
-            // chart.updateMatrix();
             chart.lookAt(ORIGIN);
             chart.updateMatrix();
             chart.visible = false;

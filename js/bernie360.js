@@ -75,12 +75,12 @@ function init() {
     var video = BERNIE360.video;
     if (isMobile()) {
         // lower res for mobile
-        video.src = '/static/video/wsp_0650_1410_1024.mp4';
+        video.src = '/static/video/Bernie_WSP_pt1.mp4';
     } else {
         // high res, video can autostart on desktop
         //video.src = '/static/video/wsp_pt1_stereo_2160.webm';
         //if (!video.canPlayType('video/webm')) {
-            video.src = '/static/video/wsp_0650_1410_2160.mp4';
+            video.src = '/static/video/Bernie_WSP_042016_1.mp4';
             if (!video.canPlayType('video/mp4')) {
                 // TODO: some error (none of the video formats are supported)
                 console.error('video format is unsupported');
@@ -282,9 +282,9 @@ function init() {
         var times = [
             1, 5, // fade-in/out opening caption
             11, // fade-in video
-            13, 15, // chart 1
-            17, 19, // chart 2
-            21, 23, // chart 3
+            69, 90, // chart 1
+            95, 125, // chart 2
+            200, 225, // chart 3
             7*60 // fade-out
         ].map( (time) => time );
 
